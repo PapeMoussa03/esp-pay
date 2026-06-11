@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP Pay - Connexion & Inscription</title>
+    <title>ESP Pay - Connexion & Inscription Réelle</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col justify-between">
 
+    <!-- COMPOSANTS DE NOTIFICATION DYNAMIQUES -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full px-4 md:px-0"></div>
 
     <div id="custom-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0">
@@ -22,16 +23,19 @@
         </div>
     </div>
 
+    <!-- En-tête / Navbar -->
     <header class="bg-emerald-700 text-white shadow-md p-4">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold tracking-wide"><i class="fa-solid fa-graduation-cap mr-2"></i>ESP PAY</h1>
-            <span class="text-sm bg-amber-500 text-slate-900 px-3 py-1 rounded-full font-bold animate-pulse">Mode Démo</span>
+            <span id="badge-mode" class="text-sm bg-emerald-800 text-emerald-200 px-3 py-1 rounded-full font-medium">Mode Cloud Actif</span>
         </div>
     </header>
 
+    <!-- Contenu Principal -->
     <main class="container mx-auto p-4 flex-grow flex items-center justify-center">
         <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">
             
+            <!-- Sélecteur d'onglets (Connexion / Inscription) -->
             <div id="tabs-container" class="flex border-b border-gray-200 mb-6">
                 <button id="tab-login" class="w-1/2 pb-3 font-bold text-emerald-600 border-b-2 border-emerald-600 text-center transition cursor-pointer">
                     Connexion
@@ -41,15 +45,20 @@
                 </button>
             </div>
 
+            <!-- FORMULAIRE 1 : CONNEXION -->
             <div id="login-section" class="space-y-6">
                 <div class="text-center">
                     <h2 class="text-xl font-bold text-gray-950">Accéder à votre espace</h2>
-                    <p class="text-gray-500 text-xs mt-1">Entrez votre matricule pour gérer vos paiements</p>
+                    <p class="text-gray-500 text-xs mt-1">Connectez-vous avec vos identifiants universitaires</p>
                 </div>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">Numéro de Matricule</label>
-                        <input type="text" id="login-matricule" placeholder="Ex: 2026ESP0001" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition font-medium uppercase placeholder-gray-400">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">Mail Universitaire</label>
+                        <input type="email" id="login-email" placeholder="prenom.nom@esp.sn" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">Mot de passe</label>
+                        <input type="password" id="login-password" placeholder="••••••••" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
                     </div>
                     <button id="btn-login" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition cursor-pointer">
                         Se connecter
@@ -57,10 +66,11 @@
                 </div>
             </div>
 
+            <!-- FORMULAIRE 2 : INSCRIPTION -->
             <div id="register-section" class="hidden space-y-4">
                 <div class="text-center">
                     <h2 class="text-xl font-bold text-gray-950">Créer un compte</h2>
-                    <p class="text-gray-500 text-xs mt-1">Utilisez votre e-mail universitaire pour validation</p>
+                    <p class="text-gray-500 text-xs mt-1">Un e-mail de validation réelle vous sera envoyé</p>
                 </div>
                 <div class="space-y-3">
                     <div class="grid grid-cols-2 gap-2">
@@ -90,16 +100,26 @@
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Mail Universitaire</label>
                         <input type="email" id="reg-email" placeholder="prenom.nom@esp.sn" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
                     </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Mot de passe (min 6 car.)</label>
+                        <input type="password" id="reg-password" placeholder="••••••••" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                    </div>
                     <button id="btn-register" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl transition cursor-pointer mt-2 text-sm">
-                        Créer mon compte
+                        Créer mon compte et envoyer le mail
                     </button>
                 </div>
             </div>
 
+            <!-- SECTION 3 : TABLEAU DE BORD & PAIEMENT -->
             <div id="payment-section" class="hidden space-y-6">
-                <div class="border-b border-gray-100 pb-4">
-                    <h3 id="student-name" class="text-xl font-bold text-gray-900">...</h3>
-                    <p id="student-info" class="text-xs text-emerald-600 font-medium mt-0.5">Matricule : -- | Cycle : --</p>
+                <div class="border-b border-gray-100 pb-4 flex justify-between items-start">
+                    <div>
+                        <h3 id="student-name" class="text-xl font-bold text-gray-900">...</h3>
+                        <p id="student-info" class="text-xs text-emerald-600 font-medium mt-0.5">Matricule : -- | Cycle : --</p>
+                    </div>
+                    <button id="btn-logout" class="text-xs bg-gray-100 hover:bg-rose-100 text-gray-600 hover:text-rose-600 px-2.5 py-1.5 rounded-lg transition font-medium cursor-pointer">
+                        Déconnexion
+                    </button>
                 </div>
 
                 <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex justify-between items-center">
@@ -141,11 +161,27 @@
         <p>&copy; 2026 École Supérieure Polytechnique de Dakar. Tous droits réservés.</p>
     </footer>
 
-    <script>
-        // Base de données fictive
-        const baseDeDonneesLocale = {
-            "2026ESP0001": { prenom: "Awa", nom: "Ndiaye", cycle: "Master", email: "awa.ndiaye@esp.sn", montant_deja_paye: 150000 }
+    <!-- ================= LOGIQUE CONNECTÉE FIREBASE VRAIE ================= -->
+    <script type="module">
+        // Importation des SDK officiels Firebase depuis le CDN de Google
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // ⚠️ REMPLACE CES LIGNES PAR TES CLÉS EXACTES DE LA CONSOLE FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbsEUQ9YRb87wFu196TZnNrTZntgiGZE8",
+            authDomain: "esp-pay.firebaseapp.com",
+            projectId: "esp-pay",
+            storageBucket: "esp-pay.firebasestorage.app",
+            messagingSenderId: "629871793149",
+            appId: "1:629871793149:web:7522b73742d4d15187bf94"
         };
+
+        // Initialisation de Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
         // DOM Éléments
         const tabsContainer = document.getElementById('tabs-container');
@@ -155,21 +191,17 @@
         const registerSection = document.getElementById('register-section');
         const paymentSection = document.getElementById('payment-section');
 
-        // FONCTIONS DE NOTIFICATION STYLEES
+        // Fonctions d'affichage des alertes graphiques
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             const bgClass = type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900';
             const iconClass = type === 'success' ? 'fa-circle-check text-emerald-600' : 'fa-circle-exclamation text-rose-600';
-            
             toast.className = `flex items-center gap-3 p-4 rounded-xl border ${bgClass} shadow-lg transform translate-x-full transition-all duration-300 ease-out opacity-0 text-sm font-medium`;
             toast.innerHTML = `<i class="fa-solid ${iconClass} text-lg"></i><div class="flex-grow">${message}</div>`;
             container.appendChild(toast);
             setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
-            setTimeout(() => {
-                toast.classList.add('translate-x-full', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 4000);
+            setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 4000);
         }
 
         function showCustomModal(title, message, type = 'success') {
@@ -177,7 +209,6 @@
             const modalBox = modal.querySelector('div');
             const iconContainer = document.getElementById('modal-icon');
             const btnClose = document.getElementById('modal-btn-close');
-            
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-message').innerText = message;
             
@@ -190,103 +221,148 @@
                 iconContainer.innerHTML = '<i class="fa-solid fa-xmark"></i>';
                 btnClose.className = "w-full bg-rose-600 hover:bg-rose-700 py-2.5 rounded-xl text-sm font-bold text-white transition cursor-pointer";
             }
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
             setTimeout(() => { modal.classList.remove('opacity-0'); modalBox.classList.remove('scale-95'); }, 10);
-            
             btnClose.onclick = () => {
                 modal.classList.add('opacity-0'); modalBox.classList.add('scale-95');
                 setTimeout(() => { modal.classList.remove('flex'); modal.classList.add('hidden'); }, 300);
             };
         }
 
-        // Navigation onglets
+        // Basculement Onglets
         tabLogin.addEventListener('click', () => {
             tabLogin.className = "w-1/2 pb-3 font-bold text-emerald-600 border-b-2 border-emerald-600 text-center cursor-pointer";
             tabRegister.className = "w-1/2 pb-3 font-medium text-gray-400 text-center hover:text-gray-600 cursor-pointer";
             loginSection.classList.remove('hidden'); registerSection.classList.add('hidden');
         });
-
         tabRegister.addEventListener('click', () => {
             tabRegister.className = "w-1/2 pb-3 font-bold text-emerald-600 border-b-2 border-emerald-600 text-center cursor-pointer";
             tabLogin.className = "w-1/2 pb-3 font-medium text-gray-400 text-center hover:text-gray-600 cursor-pointer";
             registerSection.classList.remove('hidden'); loginSection.classList.add('hidden');
         });
 
-        // Gestion de l'Inscription
-        document.getElementById('btn-register').addEventListener('click', () => {
+        // 1. GESTION DE L'INSCRIPTION REELLE & EMAIL VERIFICATION
+        document.getElementById('btn-register').addEventListener('click', async () => {
             const prenom = document.getElementById('reg-prenom').value.trim();
             const nom = document.getElementById('reg-nom').value.trim();
             const cycle = document.getElementById('reg-cycle').value;
             const matricule = document.getElementById('reg-matricule').value.trim().toUpperCase();
             const email = document.getElementById('reg-email').value.trim().toLowerCase();
+            const password = document.getElementById('reg-password').value;
 
-            if (!prenom || !nom || !matricule || !email) {
-                showToast("Veuillez remplir tous les champs d'inscription.", "error");
-                return;
+            if (!prenom || !nom || !matricule || !email || !password) {
+                showToast("Veuillez remplir tous les champs.", "error"); return;
             }
-
-            // Sécurité stricte sur l'e-mail de l'école
             if (!email.endsWith('@esp.sn') && !email.endsWith('@ucad.edu.sn')) {
-                showToast("Accès refusé. Seuls les e-mails @esp.sn et @ucad.edu.sn sont autorisés.", "error");
-                return;
+                showToast("Seuls les e-mails @esp.sn et @ucad.edu.sn sont autorisés.", "error"); return;
+            }
+            if (password.length < 6) {
+                showToast("Le mot de passe doit faire au moins 6 caractères.", "error"); return;
             }
 
-            if (baseDeDonneesLocale[matricule]) {
-                showToast("Ce numéro de matricule possède déjà un compte.", "error");
-                return;
+            try {
+                // Création du compte utilisateur dans Firebase Auth
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Envoi du VRAI mail de vérification Google
+                await sendEmailVerification(user);
+
+                // Enregistrement des métadonnées scolaires dans Firestore (Lié à l'UID Firebase unique de l'utilisateur)
+                await setDoc(doc(db, "etudiants", user.uid), {
+                    prenom: prenom,
+                    nom: nom,
+                    cycle: cycle,
+                    matricule: matricule,
+                    email: email,
+                    montant_deja_paye: 0
+                });
+
+                showCustomModal("Vérification requise !", `Un véritable e-mail de confirmation vient d'être envoyé à l'adresse : ${email}. Veuillez cliquer sur le lien reçu avant de vous connecter.`, "success");
+                tabLogin.click();
+            } catch (error) {
+                console.error(error);
+                showToast("Erreur d'inscription : " + error.message, "error");
+            }
+        });
+
+        // 2. GESTION DE LA CONNEXION AVEC DOUBLE FILTRE (AUTH + VALIDATION MAIL)
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value.trim().toLowerCase();
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) {
+                showToast("Veuillez remplir tous les champs de connexion.", "error"); return;
             }
 
-            baseDeDonneesLocale[matricule] = { prenom, nom, cycle, email, montant_deja_paye: 0 };
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
 
-            showCustomModal("Compte Enregistré !", `Votre profil a été créé. Un e-mail de confirmation a été envoyé sur ${email}. Vous pouvez vous connecter.`, "success");
+                // FILTRE DE SECURITE : Est-ce qu'il a cliqué sur le lien reçu par mail ?
+                if (!user.emailVerified) {
+                    showToast("Votre adresse e-mail n'a pas encore été vérifiée. Regardez vos messages !", "error");
+                    await signOut(auth); // Déconnexion forcée tant qu'il n'est pas validé
+                    return;
+                }
+
+                // Si validé, on va charger ses données depuis Firestore
+                const docSnap = await getDoc(doc(db, "etudiants", user.uid));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    chargerDashboardEtudiant(data);
+                }
+            } catch (error) {
+                showToast("Identifiants incorrects ou utilisateur introuvable.", "error");
+            }
+        });
+
+        function chargerDashboardEtudiant(data) {
+            document.getElementById('student-name').innerText = `${data.prenom} ${data.nom}`;
+            document.getElementById('student-info').innerText = `Matricule : ${data.matricule} | Cursus : ${data.cycle}`;
+            document.getElementById('solde-affiche').innerHTML = `${data.montant_deja_paye.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
             
-            tabLogin.click();
-            document.getElementById('login-matricule').value = matricule;
-        });
+            tabsContainer.classList.add('hidden');
+            loginSection.classList.add('hidden');
+            paymentSection.classList.remove('hidden');
+        }
 
-        // Gestion de la Connexion & Paiement
-        let etudiantActuelId = "";
-
-        document.getElementById('btn-login').addEventListener('click', () => {
-            const matricule = document.getElementById('login-matricule').value.trim().toUpperCase();
-            const etudiant = baseDeDonneesLocale[matricule];
-
-            if (etudiant) {
-                etudiantActuelId = matricule;
-                document.getElementById('student-name').innerText = `${etudiant.prenom} ${etudiant.nom}`;
-                document.getElementById('student-info').innerText = `Matricule : ${matricule} | Cursus : ${etudiant.cycle}`;
-                document.getElementById('solde-affiche').innerHTML = `${etudiant.montant_deja_paye.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
-
-                tabsContainer.classList.add('hidden');
-                loginSection.classList.add('hidden');
-                paymentSection.classList.remove('hidden');
-                showToast("Connexion réussie !", "success");
-            } else {
-                showToast("Matricule inconnu. Veuillez d'abord créer un compte.", "error");
-            }
-        });
-
-        document.getElementById('btn-payer').addEventListener('click', () => {
+        // 3. ENREGISTREMENT DU PAIEMENT DANS FIRESTORE
+        document.getElementById('btn-payer').addEventListener('click', async () => {
             const montantSaisi = parseInt(document.getElementById('amount-input').value);
             const operateur = document.querySelector('input[name="operator"]:checked');
+            const currentUser = auth.currentUser;
 
             if (!montantSaisi || montantSaisi < 5000) {
-                showToast("Veuillez entrer un montant valide (minimum 5 000 FCFA).", "error");
-                return;
+                showToast("Le montant minimum est de 5 000 FCFA.", "error"); return;
             }
             if (!operateur) {
-                showToast("Veuillez sélectionner Wave ou Orange Money.", "error");
-                return;
+                showToast("Sélectionnez votre moyen de paiement.", "error"); return;
             }
 
-            baseDeDonneesLocale[etudiantActuelId].montant_deja_paye += montantSaisi;
-            const nouveauSolde = baseDeDonneesLocale[etudiantActuelId].montant_deja_paye;
+            try {
+                const docRef = doc(db, "etudiants", currentUser.uid);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const nouveauSolde = docSnap.data().montant_deja_paye + montantSaisi;
+                    
+                    // Mise à jour de la base de données Firebase réelle
+                    await updateDoc(docRef, { montant_deja_paye: nouveauSolde });
 
-            document.getElementById('solde-affiche').innerHTML = `${nouveauSolde.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
-            showCustomModal("Paiement Validé !", `Le versement de ${montantSaisi.toLocaleString()} FCFA via ${operateur.value.toUpperCase()} a été enregistré avec succès.`, "success");
-            document.getElementById('amount-input').value = "";
+                    document.getElementById('solde-affiche').innerHTML = `${nouveauSolde.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
+                    showCustomModal("Versement Réussi !", `Votre paiement de ${montantSaisi.toLocaleString()} FCFA via ${operateur.value.toUpperCase()} a bien été enregistré.`, "success");
+                    document.getElementById('amount-input').value = "";
+                }
+            } catch (error) {
+                showToast("Échec de la transaction système.", "error");
+            }
+        });
+
+        // 4. DECONNEXION
+        document.getElementById('btn-logout').addEventListener('click', async () => {
+            await signOut(auth);
+            location.reload(); // Recharge la page proprement
         });
     </script>
 </body>
