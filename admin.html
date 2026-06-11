@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP Pay - Administration & Alertes</title>
+    <!-- Intégration de Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col justify-between">
+
+    <!-- En-tête / Navbar Admin -->
+    <header class="bg-slate-900 text-white shadow-md p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-wide"><i class="fa-solid fa-sliders mr-2"></i>ESP PAY</h1>
+            <span class="text-sm bg-amber-500/20 px-3 py-1 rounded-full text-amber-400 font-semibold border border-amber-500/30">Console Admin</span>
+        </div>
+    </header>
+
+    <!-- Contenu Principal -->
+    <main class="container mx-auto p-4 flex-grow flex items-center justify-center">
+        <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8 space-y-6">
+            
+            <!-- Titre de la section -->
+            <div class="border-b border-gray-100 pb-4">
+                <h2 class="text-2xl font-bold text-slate-950">Gestion des Alertes Contrôle</h2>
+                <p class="text-gray-500 text-sm mt-1">Rédigez et envoyez une notification SMS collective à tous les étudiants inscrits.</p>
+            </div>
+
+            <!-- Formulaire d'alerte -->
+            <div class="space-y-5">
+                <!-- Zone de texte du SMS -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label for="sms-text" class="text-sm font-semibold text-gray-700">Contenu du message SMS</label>
+                        <span id="char-count" class="text-xs font-medium text-gray-400">0 / 160 caractères (1 SMS)</span>
+                    </div>
+                    <textarea id="sms-text" rows="4" placeholder="Ex: Rappel ESP : Un contrôle de scolarité aura lieu le 15 juin. Veuillez régulariser votre situation sur la plateforme d'ici là." 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-800 focus:border-slate-800 outline-none transition text-gray-900 placeholder-gray-400 resize-none font-medium text-sm"></textarea>
+                </div>
+
+                <!-- Informations statistiques simulées -->
+                <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 flex items-center gap-4">
+                    <div class="bg-slate-900 text-white p-3 rounded-xl">
+                        <i class="fa-solid fa-users text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Destinataires cibles</p>
+                        <p class="text-lg font-bold text-slate-900 mt-0.5">Tous les étudiants enregistrés</p>
+                    </div>
+                </div>
+
+                <!-- Bouton d'action -->
+                <button id="btn-envoyer" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-slate-950/20 transition active:scale-98 cursor-pointer flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paper-plane text-sm"></i>
+                    Lancer la campagne SMS
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Pied de page -->
+    <footer class="bg-slate-950 text-gray-500 text-center text-xs p-4 border-t border-slate-900">
+        <p>&copy; 2026 École Supérieure Polytechnique de Dakar. Espace d'administration privé.</p>
+    </footer>
+
+    <!-- Logique d'affichage dynamique pour le compteur de caractères -->
+    <script>
+        const textarea = document.getElementById('sms-text');
+        const charCount = document.getElementById('char-count');
+        const btnEnvoyer = document.getElementById('btn-envoyer');
+
+        textarea.addEventListener('input', () => {
+            const len = textarea.value.length;
+            // Calcul du nombre de SMS nécessaires (1 SMS standard = 160 caractères)
+            const numSms = Math.ceil(len / 160) || 1;
+            charCount.innerText = `${len} / ${numSms * 160} caractères (${numSms} SMS)`;
+            
+            if (len > 160) {
+                charCount.classList.remove('text-gray-400');
+                charCount.classList.add('text-amber-600');
+            } else {
+                charCount.classList.remove('text-amber-600');
+                charCount.classList.add('text-gray-400');
+            }
+        });
+
+        // Simulation de l'envoi
+        btnEnvoyer.addEventListener('click', () => {
+            if (textarea.value.trim() === "") {
+                alert("Veuillez rédiger un message avant d'envoyer.");
+            } else {
+                alert("Campagne SMS lancée avec succès vers la base de données !");
+                textarea.value = "";
+                charCount.innerText = "0 / 160 caractères (1 SMS)";
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP Pay - Paiement en Ligne</title>
+    <!-- Intégration de Tailwind CSS pour un design moderne et responsive -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col justify-between">
+
+    <!-- En-tête / Navbar -->
+    <header class="bg-emerald-700 text-white shadow-md p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-wide"><i class="fa-solid fa-graduation-cap mr-2"></i>ESP PAY</h1>
+            <span class="text-sm bg-emerald-800 px-3 py-1 rounded-full text-emerald-200 font-medium">Espace Étudiant</span>
+        </div>
+    </header>
+
+    <!-- Contenu Principal -->
+    <main class="container mx-auto p-4 flex-grow flex items-center justify-center">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">
+            
+            <!-- Section 1 : Connexion par Matricule -->
+            <div id="auth-section" class="space-y-6">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold text-gray-950">Bienvenue</h2>
+                    <p class="text-gray-500 text-sm mt-1">Entrez votre matricule pour accéder à votre espace de paiement</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="matricule-input" class="block text-sm font-semibold text-gray-700 mb-2">Numéro de Matricule</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <i class="fa-solid fa-user-id font-bold"></i>
+                            </span>
+                            <input type="text" id="matricule-input" placeholder="Ex: 2026ESP0123" 
+                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition text-gray-900 uppercase font-medium placeholder-gray-400">
+                        </div>
+                    </div>
+                    
+                    <button id="btn-connexion" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition active:scale-98 cursor-pointer">
+                        Vérifier mon statut
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section 2 : Tableau de bord & Paiement (Masqué au départ, s'affichera après connexion) -->
+            <div id="payment-section" class="hidden space-y-6">
+                <!-- Infos Étudiant -->
+                <div class="border-b border-gray-100 pb-4">
+                    <h3 id="student-name" class="text-xl font-bold text-gray-900">Awa Ndiaye</h3>
+                    <p id="student-matricule" class="text-sm text-emerald-600 font-medium mt-0.5">Matricule : 2026ESP0123</p>
+                </div>
+
+                <!-- Solde Actuel -->
+                <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs text-emerald-700 font-semibold uppercase tracking-wider">Montant déjà payé</p>
+                        <p id="solde-affiche" class="text-2xl font-black text-emerald-900 mt-1">150 000 <span class="text-sm font-bold">FCFA</span></p>
+                    </div>
+                    <div class="bg-emerald-600 text-white p-3 rounded-xl shadow-inner">
+                        <i class="fa-solid fa-wallet text-xl"></i>
+                    </div>
+                </div>
+
+                <!-- Formulaire de Paiement -->
+                <div class="space-y-4">
+                    <div>
+                        <label for="amount-input" class="block text-sm font-semibold text-gray-700 mb-2">Montant à verser (FCFA)</label>
+                        <input type="number" id="amount-input" placeholder="Ex: 50000" min="5000"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition text-gray-900 font-semibold">
+                    </div>
+
+                    <!-- Choix de l'opérateur -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Moyen de paiement</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-400 transition font-medium text-sm select-none">
+                                <input type="radio" name="operator" value="wave" class="accent-blue-500">
+                                Wave
+                            </label>
+                            <label class="flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-400 transition font-medium text-sm select-none">
+                                <input type="radio" name="operator" value="om" class="accent-orange-500">
+                                Orange Money
+                            </label>
+                        </div>
+                    </div>
+
+                    <button id="btn-payer" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition active:scale-98 cursor-pointer mt-2">
+                        Procéder au paiement
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Pied de page -->
+    <footer class="bg-gray-900 text-gray-400 text-center text-xs p-4 border-t border-gray-800">
+        <p>&copy; 2026 École Supérieure Polytechnique de Dakar. Tous droits réservés.</p>
+    </footer>
+
+    <!-- Script temporaire pour tester le passage d'un écran à l'autre -->
+    <script>
+        const authSection = document.getElementById('auth-section');
+        const paymentSection = document.getElementById('payment-section');
+        const btnConnexion = document.getElementById('btn-connexion');
+
+        // Simulation : quand on clique sur connexion, on bascule sur l'interface de paiement
+        btnConnexion.addEventListener('click', () => {
+            const matricule = document.getElementById('matricule-input').value;
+            if (matricule.trim() !== "") {
+                authSection.classList.add('hidden');
+                paymentSection.classList.remove('hidden');
+                document.getElementById('student-matricule').innerText = "Matricule : " + matricule.toUpperCase();
+            } else {
+                alert("Veuillez saisir votre matricule");
+            }
+        });
+    </script>
+</body>
+</html>
