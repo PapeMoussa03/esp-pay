@@ -3,94 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP Pay - Paiement en Ligne</title>
-    <!-- Intégration de Tailwind CSS pour un design moderne et responsive -->
+    <title>ESP Pay - Connexion & Inscription</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Icônes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- En-tête / Navbar -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full px-4 md:px-0"></div>
+
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-gray-100 p-6 text-center transform scale-95 transition-all duration-300">
+            <div id="modal-icon" class="mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4"></div>
+            <h3 id="modal-title" class="text-lg font-bold text-gray-950 mb-2"></h3>
+            <p id="modal-message" class="text-sm text-gray-500 mb-6"></p>
+            <button id="modal-btn-close" class="w-full py-2.5 rounded-xl text-sm font-bold text-white transition cursor-pointer">
+                D'accord
+            </button>
+        </div>
+    </div>
+
     <header class="bg-emerald-700 text-white shadow-md p-4">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold tracking-wide"><i class="fa-solid fa-graduation-cap mr-2"></i>ESP PAY</h1>
-            <span class="text-sm bg-emerald-800 px-3 py-1 rounded-full text-emerald-200 font-medium">Espace Étudiant</span>
+            <span class="text-sm bg-amber-500 text-slate-900 px-3 py-1 rounded-full font-bold animate-pulse">Mode Démo</span>
         </div>
     </header>
 
-    <!-- Contenu Principal -->
     <main class="container mx-auto p-4 flex-grow flex items-center justify-center">
         <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">
             
-            <!-- Section 1 : Connexion par Matricule -->
-            <div id="auth-section" class="space-y-6">
+            <div id="tabs-container" class="flex border-b border-gray-200 mb-6">
+                <button id="tab-login" class="w-1/2 pb-3 font-bold text-emerald-600 border-b-2 border-emerald-600 text-center transition cursor-pointer">
+                    Connexion
+                </button>
+                <button id="tab-register" class="w-1/2 pb-3 font-medium text-gray-400 text-center transition hover:text-gray-600 cursor-pointer">
+                    Inscription
+                </button>
+            </div>
+
+            <div id="login-section" class="space-y-6">
                 <div class="text-center">
-                    <h2 class="text-2xl font-bold text-gray-950">Bienvenue</h2>
-                    <p class="text-gray-500 text-sm mt-1">Entrez votre matricule pour accéder à votre espace de paiement</p>
+                    <h2 class="text-xl font-bold text-gray-950">Accéder à votre espace</h2>
+                    <p class="text-gray-500 text-xs mt-1">Entrez votre matricule pour gérer vos paiements</p>
                 </div>
-                
                 <div class="space-y-4">
                     <div>
-                        <label for="matricule-input" class="block text-sm font-semibold text-gray-700 mb-2">Numéro de Matricule</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fa-solid fa-user-id font-bold"></i>
-                            </span>
-                            <input type="text" id="matricule-input" placeholder="Ex: 2026ESP0123" 
-                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition text-gray-900 uppercase font-medium placeholder-gray-400">
-                        </div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">Numéro de Matricule</label>
+                        <input type="text" id="login-matricule" placeholder="Ex: 2026ESP0001" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition font-medium uppercase placeholder-gray-400">
                     </div>
-                    
-                    <button id="btn-connexion" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition active:scale-98 cursor-pointer">
-                        Vérifier mon statut
+                    <button id="btn-login" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition cursor-pointer">
+                        Se connecter
                     </button>
                 </div>
             </div>
 
-            <!-- Section 2 : Tableau de bord & Paiement (Masqué au départ, s'affichera après connexion) -->
+            <div id="register-section" class="hidden space-y-4">
+                <div class="text-center">
+                    <h2 class="text-xl font-bold text-gray-950">Créer un compte</h2>
+                    <p class="text-gray-500 text-xs mt-1">Utilisez votre e-mail universitaire pour validation</p>
+                </div>
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Prénom</label>
+                            <input type="text" id="reg-prenom" placeholder="Awa" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Nom</label>
+                            <input type="text" id="reg-nom" placeholder="Ndiaye" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Cycle / Filière</label>
+                        <select id="reg-cycle" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm bg-white font-medium">
+                            <option value="DUT">DUT (Public)</option>
+                            <option value="DIC">DIC (Public)</option>
+                            <option value="Licence Pro">Licence Professionnelle (Privé)</option>
+                            <option value="Master">Master (Privé)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Numéro de Matricule</label>
+                        <input type="text" id="reg-matricule" placeholder="Ex: 2026ESP9999" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Mail Universitaire</label>
+                        <input type="email" id="reg-email" placeholder="prenom.nom@esp.sn" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                    </div>
+                    <button id="btn-register" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl transition cursor-pointer mt-2 text-sm">
+                        Créer mon compte
+                    </button>
+                </div>
+            </div>
+
             <div id="payment-section" class="hidden space-y-6">
-                <!-- Infos Étudiant -->
                 <div class="border-b border-gray-100 pb-4">
-                    <h3 id="student-name" class="text-xl font-bold text-gray-900">Awa Ndiaye</h3>
-                    <p id="student-matricule" class="text-sm text-emerald-600 font-medium mt-0.5">Matricule : 2026ESP0123</p>
+                    <h3 id="student-name" class="text-xl font-bold text-gray-900">...</h3>
+                    <p id="student-info" class="text-xs text-emerald-600 font-medium mt-0.5">Matricule : -- | Cycle : --</p>
                 </div>
 
-                <!-- Solde Actuel -->
                 <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex justify-between items-center">
                     <div>
                         <p class="text-xs text-emerald-700 font-semibold uppercase tracking-wider">Montant déjà payé</p>
-                        <p id="solde-affiche" class="text-2xl font-black text-emerald-900 mt-1">150 000 <span class="text-sm font-bold">FCFA</span></p>
+                        <p id="solde-affiche" class="text-2xl font-black text-emerald-900 mt-1">0 <span class="text-sm font-bold">FCFA</span></p>
                     </div>
-                    <div class="bg-emerald-600 text-white p-3 rounded-xl shadow-inner">
+                    <div class="bg-emerald-600 text-white p-3 rounded-xl">
                         <i class="fa-solid fa-wallet text-xl"></i>
                     </div>
                 </div>
 
-                <!-- Formulaire de Paiement -->
                 <div class="space-y-4">
                     <div>
-                        <label for="amount-input" class="block text-sm font-semibold text-gray-700 mb-2">Montant à verser (FCFA)</label>
-                        <input type="number" id="amount-input" placeholder="Ex: 50000" min="5000"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition text-gray-900 font-semibold">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Montant à verser (FCFA)</label>
+                        <input type="number" id="amount-input" placeholder="Ex: 50000" min="5000" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-semibold">
                     </div>
-
-                    <!-- Choix de l'opérateur -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Moyen de paiement</label>
                         <div class="grid grid-cols-2 gap-3">
-                            <label class="flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-400 transition font-medium text-sm select-none">
-                                <input type="radio" name="operator" value="wave" class="accent-blue-500">
-                                Wave
+                            <label class="flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-400 transition text-sm">
+                                <input type="radio" name="operator" value="wave"> Wave
                             </label>
-                            <label class="flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-400 transition font-medium text-sm select-none">
-                                <input type="radio" name="operator" value="om" class="accent-orange-500">
-                                Orange Money
+                            <label class="flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-400 transition text-sm">
+                                <input type="radio" name="operator" value="om"> Orange Money
                             </label>
                         </div>
                     </div>
-
-                    <button id="btn-payer" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition active:scale-98 cursor-pointer mt-2">
+                    <button id="btn-payer" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition cursor-pointer">
                         Procéder au paiement
                     </button>
                 </div>
@@ -99,27 +137,156 @@
         </div>
     </main>
 
-    <!-- Pied de page -->
-    <footer class="bg-gray-900 text-gray-400 text-center text-xs p-4 border-t border-gray-800">
+    <footer class="bg-gray-900 text-gray-400 text-center text-xs p-4">
         <p>&copy; 2026 École Supérieure Polytechnique de Dakar. Tous droits réservés.</p>
     </footer>
 
-    <!-- Script temporaire pour tester le passage d'un écran à l'autre -->
     <script>
-        const authSection = document.getElementById('auth-section');
-        const paymentSection = document.getElementById('payment-section');
-        const btnConnexion = document.getElementById('btn-connexion');
+        // Base de données fictive
+        const baseDeDonneesLocale = {
+            "2026ESP0001": { prenom: "Awa", nom: "Ndiaye", cycle: "Master", email: "awa.ndiaye@esp.sn", montant_deja_paye: 150000 }
+        };
 
-        // Simulation : quand on clique sur connexion, on bascule sur l'interface de paiement
-        btnConnexion.addEventListener('click', () => {
-            const matricule = document.getElementById('matricule-input').value;
-            if (matricule.trim() !== "") {
-                authSection.classList.add('hidden');
-                paymentSection.classList.remove('hidden');
-                document.getElementById('student-matricule').innerText = "Matricule : " + matricule.toUpperCase();
+        // DOM Éléments
+        const tabsContainer = document.getElementById('tabs-container');
+        const tabLogin = document.getElementById('tab-login');
+        const tabRegister = document.getElementById('tab-register');
+        const loginSection = document.getElementById('login-section');
+        const registerSection = document.getElementById('register-section');
+        const paymentSection = document.getElementById('payment-section');
+
+        // FONCTIONS DE NOTIFICATION STYLEES
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900';
+            const iconClass = type === 'success' ? 'fa-circle-check text-emerald-600' : 'fa-circle-exclamation text-rose-600';
+            
+            toast.className = `flex items-center gap-3 p-4 rounded-xl border ${bgClass} shadow-lg transform translate-x-full transition-all duration-300 ease-out opacity-0 text-sm font-medium`;
+            toast.innerHTML = `<i class="fa-solid ${iconClass} text-lg"></i><div class="flex-grow">${message}</div>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function showCustomModal(title, message, type = 'success') {
+            const modal = document.getElementById('custom-modal');
+            const modalBox = modal.querySelector('div');
+            const iconContainer = document.getElementById('modal-icon');
+            const btnClose = document.getElementById('modal-btn-close');
+            
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            
+            if (type === 'success') {
+                iconContainer.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 bg-emerald-100 text-emerald-600 text-xl";
+                iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
+                btnClose.className = "w-full bg-emerald-600 hover:bg-emerald-700 py-2.5 rounded-xl text-sm font-bold text-white transition cursor-pointer";
             } else {
-                alert("Veuillez saisir votre matricule");
+                iconContainer.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 bg-rose-100 text-rose-600 text-xl";
+                iconContainer.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                btnClose.className = "w-full bg-rose-600 hover:bg-rose-700 py-2.5 rounded-xl text-sm font-bold text-white transition cursor-pointer";
             }
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { modal.classList.remove('opacity-0'); modalBox.classList.remove('scale-95'); }, 10);
+            
+            btnClose.onclick = () => {
+                modal.classList.add('opacity-0'); modalBox.classList.add('scale-95');
+                setTimeout(() => { modal.classList.remove('flex'); modal.classList.add('hidden'); }, 300);
+            };
+        }
+
+        // Navigation onglets
+        tabLogin.addEventListener('click', () => {
+            tabLogin.className = "w-1/2 pb-3 font-bold text-emerald-600 border-b-2 border-emerald-600 text-center cursor-pointer";
+            tabRegister.className = "w-1/2 pb-3 font-medium text-gray-400 text-center hover:text-gray-600 cursor-pointer";
+            loginSection.classList.remove('hidden'); registerSection.classList.add('hidden');
+        });
+
+        tabRegister.addEventListener('click', () => {
+            tabRegister.className = "w-1/2 pb-3 font-bold text-emerald-600 border-b-2 border-emerald-600 text-center cursor-pointer";
+            tabLogin.className = "w-1/2 pb-3 font-medium text-gray-400 text-center hover:text-gray-600 cursor-pointer";
+            registerSection.classList.remove('hidden'); loginSection.classList.add('hidden');
+        });
+
+        // Gestion de l'Inscription
+        document.getElementById('btn-register').addEventListener('click', () => {
+            const prenom = document.getElementById('reg-prenom').value.trim();
+            const nom = document.getElementById('reg-nom').value.trim();
+            const cycle = document.getElementById('reg-cycle').value;
+            const matricule = document.getElementById('reg-matricule').value.trim().toUpperCase();
+            const email = document.getElementById('reg-email').value.trim().toLowerCase();
+
+            if (!prenom || !nom || !matricule || !email) {
+                showToast("Veuillez remplir tous les champs d'inscription.", "error");
+                return;
+            }
+
+            // Sécurité stricte sur l'e-mail de l'école
+            if (!email.endsWith('@esp.sn') && !email.endsWith('@ucad.edu.sn')) {
+                showToast("Accès refusé. Seuls les e-mails @esp.sn et @ucad.edu.sn sont autorisés.", "error");
+                return;
+            }
+
+            if (baseDeDonneesLocale[matricule]) {
+                showToast("Ce numéro de matricule possède déjà un compte.", "error");
+                return;
+            }
+
+            baseDeDonneesLocale[matricule] = { prenom, nom, cycle, email, montant_deja_paye: 0 };
+
+            showCustomModal("Compte Enregistré !", `Votre profil a été créé. Un e-mail de confirmation a été envoyé sur ${email}. Vous pouvez vous connecter.`, "success");
+            
+            tabLogin.click();
+            document.getElementById('login-matricule').value = matricule;
+        });
+
+        // Gestion de la Connexion & Paiement
+        let etudiantActuelId = "";
+
+        document.getElementById('btn-login').addEventListener('click', () => {
+            const matricule = document.getElementById('login-matricule').value.trim().toUpperCase();
+            const etudiant = baseDeDonneesLocale[matricule];
+
+            if (etudiant) {
+                etudiantActuelId = matricule;
+                document.getElementById('student-name').innerText = `${etudiant.prenom} ${etudiant.nom}`;
+                document.getElementById('student-info').innerText = `Matricule : ${matricule} | Cursus : ${etudiant.cycle}`;
+                document.getElementById('solde-affiche').innerHTML = `${etudiant.montant_deja_paye.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
+
+                tabsContainer.classList.add('hidden');
+                loginSection.classList.add('hidden');
+                paymentSection.classList.remove('hidden');
+                showToast("Connexion réussie !", "success");
+            } else {
+                showToast("Matricule inconnu. Veuillez d'abord créer un compte.", "error");
+            }
+        });
+
+        document.getElementById('btn-payer').addEventListener('click', () => {
+            const montantSaisi = parseInt(document.getElementById('amount-input').value);
+            const operateur = document.querySelector('input[name="operator"]:checked');
+
+            if (!montantSaisi || montantSaisi < 5000) {
+                showToast("Veuillez entrer un montant valide (minimum 5 000 FCFA).", "error");
+                return;
+            }
+            if (!operateur) {
+                showToast("Veuillez sélectionner Wave ou Orange Money.", "error");
+                return;
+            }
+
+            baseDeDonneesLocale[etudiantActuelId].montant_deja_paye += montantSaisi;
+            const nouveauSolde = baseDeDonneesLocale[etudiantActuelId].montant_deja_paye;
+
+            document.getElementById('solde-affiche').innerHTML = `${nouveauSolde.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
+            showCustomModal("Paiement Validé !", `Le versement de ${montantSaisi.toLocaleString()} FCFA via ${operateur.value.toUpperCase()} a été enregistré avec succès.`, "success");
+            document.getElementById('amount-input').value = "";
         });
     </script>
 </body>
