@@ -1,0 +1,29 @@
+/* Couleurs officielles de l'ESP */
+.bg-esp-blue { background-color: #004b93; }
+.text-esp-blue { color: #004b93; }
+.border-esp-blue { border-color: #004b93; }
+.bg-esp-green { background-color: #55b748; }
+.text-esp-green { color: #55b748; }
+
+/* Classes utilitaires pour le Mode Sombre manuel */
+.dark-mode {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+}
+.dark-mode .bg-white {
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-color: #334155 !important;
+}
+.dark-mode .text-gray-950, .dark-mode .text-gray-900, .dark-mode .text-gray-800 {
+    color: #f8fafc !important;
+}
+.dark-mode .text-gray-500, .dark-mode .text-gray-400 {
+    color: #94a3b8 !important;
+}
+.dark-mode .bg-gray-50, .dark-mode .bg-gray-100 {
+    background-color: #334155 !important;
+}
+.dark-mode border {
+    border-color: #334155 !important;
+}

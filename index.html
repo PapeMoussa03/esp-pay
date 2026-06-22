@@ -3,21 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP Pay - Connexion & Inscription Réelle</title>
+    <title>ESP Pay - Espace Étudiant Complet</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* Couleurs officielles du site de l'ESP https://esp.sn/ */
-        .bg-esp-blue { background-color: #004b93; }
-        .text-esp-blue { color: #004b93; }
-        .border-esp-blue { border-color: #004b93; }
-        .focus-ring-esp:focus { --tw-ring-color: #004b93; }
-        
-        .bg-esp-green { background-color: #55b748; }
-        .text-esp-green { color: #55b748; }
-    </style>
+    
+    <!-- LIAISON DU FICHIER CSS ICI -->
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col justify-between">
+<body id="app-body" class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col justify-between transition-colors duration-300">
 
     <!-- COMPOSANTS DE NOTIFICATION DYNAMIQUES -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full px-4 md:px-0"></div>
@@ -33,11 +26,10 @@
         </div>
     </div>
 
-    <!-- En-tête / Navbar aux couleurs officielles de l'ESP (Bleu #004b93) -->
+    <!-- En-tête / Navbar -->
     <header class="bg-esp-blue text-white shadow-md p-3">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <!-- Conteneur du logo sans le chapeau d'étudiant à côté -->
                 <div id="logo-container" class="flex items-center justify-center bg-white p-1 rounded-lg shadow-sm h-11 px-2">
                     <img src="ESP.jpg" alt="Logo ESP" class="h-9 w-auto object-contain">
                 </div>
@@ -47,22 +39,19 @@
         </div>
     </header>
 
-    <!-- Contenu Principal -->
+    <!-- Contenu Principal (Identique au précédent) -->
     <main class="container mx-auto p-4 flex-grow flex items-center justify-center">
         <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">
             
-            <!-- Sélecteur d'onglets (Connexion / Inscription) -->
+            <!-- Sélecteur d'onglets initial (Connexion / Inscription) -->
             <div id="tabs-container" class="flex border-b border-gray-200 mb-6">
-                <button id="tab-login" class="w-1/2 pb-3 font-bold text-esp-blue border-b-2 border-esp-blue text-center transition cursor-pointer">
-                    Connexion
-                </button>
-                <button id="tab-register" class="w-1/2 pb-3 font-medium text-gray-400 text-center transition hover:text-gray-600 cursor-pointer">
-                    Inscription
-                </button>
+                <button id="tab-login" class="w-1/2 pb-3 font-bold text-esp-blue border-b-2 border-esp-blue text-center transition cursor-pointer">Connexion</button>
+                <button id="tab-register" class="w-1/2 pb-3 font-medium text-gray-400 text-center transition hover:text-gray-600 cursor-pointer">Inscription</button>
             </div>
 
             <!-- FORMULAIRE 1 : CONNEXION -->
             <div id="login-section" class="space-y-6">
+                <!-- ... (Même code de connexion qu'avant) ... -->
                 <div class="text-center">
                     <h2 class="text-xl font-bold text-gray-950">Accéder à votre espace</h2>
                     <p class="text-gray-500 text-xs mt-1">Connectez-vous avec vos identifiants universitaires</p>
@@ -70,142 +59,128 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Mail Universitaire</label>
-                        <input type="email" id="login-email" placeholder="prenom.nom@esp.sn" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm">
+                        <input type="email" id="login-email" placeholder="prenom.nom@esp.sn" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm bg-white">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Mot de passe</label>
-                        <input type="password" id="login-password" placeholder="••••••••" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm">
+                        <input type="password" id="login-password" placeholder="••••••••" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm bg-white">
                     </div>
-                    <button id="btn-login" class="w-full bg-esp-blue hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl transition cursor-pointer shadow-md shadow-blue-900/10">
-                        Se connecter
-                    </button>
+                    <button id="btn-login" class="w-full bg-esp-blue hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl transition cursor-pointer shadow-md shadow-blue-900/10">Se connecter</button>
                 </div>
             </div>
 
             <!-- FORMULAIRE 2 : INSCRIPTION -->
             <div id="register-section" class="hidden space-y-4">
-                <div class="text-center">
-                    <h2 class="text-xl font-bold text-gray-950">Créer un compte</h2>
-                    <p class="text-gray-500 text-xs mt-1">Un e-mail de validation réelle vous sera envoyé</p>
-                </div>
-                <div class="space-y-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Prénom</label>
-                            <input type="text" id="reg-prenom" placeholder="Awa" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Nom</label>
-                            <input type="text" id="reg-nom" placeholder="Ndiaye" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm">
-                        </div>
-                    </div>
-                    
-                    <!-- Sélection du Cycle -->
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Cycle</label>
-                        <select id="reg-cycle" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm bg-white font-medium">
-                            <option value="">-- Choisir un cycle --</option>
-                            <option value="DUT">DUT (Public)</option>
-                            <option value="DIC">DIC (Public)</option>
-                            <option value="Licence Pro">Licence Professionnelle (Privé)</option>
-                            <option value="Master">Master (Privé)</option>
-                        </select>
-                    </div>
-
-                    <!-- Sélection de la Classe / Niveau -->
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Classe / Niveau</label>
-                        <select id="reg-niveau" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm bg-white font-medium" disabled>
-                            <option value="">Sélectionnez d'abord le cycle</option>
-                        </select>
-                    </div>
-
-                    <!-- Sélection de l'Option / Spécialisation -->
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Option / Spécialisation</label>
-                        <select id="reg-option" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm bg-white font-medium" disabled>
-                            <option value="">Sélectionnez d'abord la classe</option>
-                        </select>
-                    </div>
-
-                    <!-- Justificatifs administratifs -->
-                    <div class="space-y-3 p-3 bg-gray-50 border border-gray-200 rounded-xl">
-                        <div>
-                            <label id="label-document" class="block text-xs font-semibold text-gray-700 mb-1">Numéro de Carte Étudiant</label>
-                            <input type="text" id="reg-document" placeholder="Ex: 2026ESP9999" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm uppercase bg-white">
-                        </div>
-                        <div>
-                            <label id="label-photo" class="block text-xs font-semibold text-gray-700 mb-1">Photo de la Carte Étudiant</label>
-                            <input type="file" id="reg-photo" accept="image/*" class="w-full px-3 py-1.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-xs bg-white text-gray-500 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer">
-                        </div>
-                        <p id="help-document" class="text-[10px] text-gray-400">Champs requis pour la vérification administrative.</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Mail Universitaire</label>
-                        <input type="email" id="reg-email" placeholder="prenom.nom@esp.sn" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm">
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Mot de passe</label>
-                            <input type="password" id="reg-password" placeholder="••••••••" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Confirmation</label>
-                            <input type="password" id="reg-password-confirm" placeholder="••••••••" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm">
-                        </div>
-                    </div>
-
-                    <button id="btn-register" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl transition cursor-pointer mt-2 text-sm flex items-center justify-center gap-2">
-                        <span>Créer mon compte et envoyer le mail</span>
-                    </button>
-                </div>
+                 <!-- ... (Même code d'inscription qu'avant) ... -->
+                 <div class="text-center"><h2 class="text-xl font-bold text-gray-950">Créer un compte</h2></div>
+                 <div class="space-y-3">
+                     <div class="grid grid-cols-2 gap-2">
+                         <div><label class="block text-xs font-semibold text-gray-700 mb-1">Prénom</label><input type="text" id="reg-prenom" placeholder="Awa" class="w-full px-3 py-2 border border-gray-300 rounded-xl outline-none text-sm bg-white"></div>
+                         <div><label class="block text-xs font-semibold text-gray-700 mb-1">Nom</label><input type="text" id="reg-nom" placeholder="Ndiaye" class="w-full px-3 py-2 border border-gray-300 rounded-xl outline-none text-sm bg-white"></div>
+                     </div>
+                     <div>
+                         <label class="block text-xs font-semibold text-gray-700 mb-1">Cycle</label>
+                         <select id="reg-cycle" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white font-medium">
+                             <option value="">-- Choisir un cycle --</option>
+                             <option value="DUT">DUT (Public)</option>
+                             <option value="DIC">DIC (Public)</option>
+                             <option value="Licence Pro">Licence Professionnelle (Privé)</option>
+                             <option value="Master">Master (Privé)</option>
+                         </select>
+                     </div>
+                     <div><label class="block text-xs font-semibold text-gray-700 mb-1">Classe / Niveau</label><select id="reg-niveau" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white font-medium" disabled><option value="">Sélectionnez d'abord le cycle</option></select></div>
+                     <div><label class="block text-xs font-semibold text-gray-700 mb-1">Option / Spécialisation</label><select id="reg-option" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white font-medium" disabled><option value="">Sélectionnez d'abord la classe</option></select></div>
+                     <div class="space-y-3 p-3 bg-gray-50 border border-gray-200 rounded-xl">
+                         <div><label id="label-document" class="block text-xs font-semibold text-gray-700 mb-1">Numéro de Carte Étudiant</label><input type="text" id="reg-document" placeholder="Ex: 2026ESP9999" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm uppercase bg-white"></div>
+                         <div><label id="label-photo" class="block text-xs font-semibold text-gray-700 mb-1">Photo de la Carte</label><input type="file" id="reg-photo" accept="image/*" class="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs bg-white text-gray-500 cursor-pointer"></div>
+                         <p id="help-document" class="text-[10px] text-gray-400">Champs requis pour la vérification.</p>
+                     </div>
+                     <div><label class="block text-xs font-semibold text-gray-700 mb-1">Mail Universitaire</label><input type="email" id="reg-email" placeholder="prenom.nom@esp.sn" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white"></div>
+                     <div class="grid grid-cols-2 gap-2">
+                         <div><label class="block text-xs font-semibold text-gray-700 mb-1">Mot de passe</label><input type="password" id="reg-password" placeholder="••••••••" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white"></div>
+                         <div><label class="block text-xs font-semibold text-gray-700 mb-1">Confirmation</label><input type="password" id="reg-password-confirm" placeholder="••••••••" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white"></div>
+                     </div>
+                     <button id="btn-register" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-sm mt-2 cursor-pointer">Créer mon compte</button>
+                 </div>
             </div>
 
-            <!-- SECTION 3 : TABLEAU DE BORD & PAIEMENT -->
-            <div id="payment-section" class="hidden space-y-6">
-                <div class="border-b border-gray-100 pb-4 flex justify-between items-start">
+            <!-- ESPACE CONNECTÉ MULTI-ONGLETS -->
+            <div id="logged-area" class="hidden space-y-6">
+                 <!-- ... (Même code de l'espace connecté qu'avant : Onglet Home, Onglet History, Onglet Settings, NavBar) ... -->
+                 <div class="border-b border-gray-100 pb-3 flex justify-between items-start">
                     <div>
-                        <h3 id="student-name" class="text-xl font-bold text-gray-900">...</h3>
-                        <p id="student-info" class="text-xs text-esp-blue font-semibold mt-0.5">Matricule : -- | Cycle : --</p>
-                    </div>
-                    <button id="btn-logout" class="text-xs bg-gray-100 hover:bg-rose-100 text-gray-600 hover:text-rose-600 px-2.5 py-1.5 rounded-lg transition font-medium cursor-pointer">
-                        Déconnexion
-                    </button>
-                </div>
-
-                <!-- Carte Solde aux teintes vertes de l'ESP -->
-                <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex justify-between items-center">
-                    <div>
-                        <p class="text-xs text-emerald-800 font-bold uppercase tracking-wider">Montant déjà payé</p>
-                        <p id="solde-affiche" class="text-2xl font-black text-emerald-950 mt-1">0 <span class="text-sm font-bold">FCFA</span></p>
-                    </div>
-                    <div class="bg-esp-green text-white p-3 rounded-xl shadow-sm">
-                        <i class="fa-solid fa-wallet text-xl"></i>
+                        <h3 id="student-name" class="text-lg font-bold text-gray-900">...</h3>
+                        <p id="student-info" class="text-xs text-esp-blue font-semibold">Matricule : --</p>
                     </div>
                 </div>
 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Montant à verser (FCFA)</label>
-                        <input type="number" id="amount-input" placeholder="Ex: 50000" min="5000" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none font-semibold">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Moyen de paiement</label>
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-400 transition text-sm">
-                                <input type="radio" name="operator" value="wave"> Wave
-                            </label>
-                            <label class="flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-400 transition text-sm">
-                                <input type="radio" name="operator" value="om"> Orange Money
-                            </label>
+                <!-- ONGLET 1 : FINANCES / PAIEMENT -->
+                <div id="section-nav-home" class="space-y-6">
+                    <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex justify-between items-center relative overflow-hidden">
+                        <div>
+                            <p class="text-xs text-emerald-800 font-bold uppercase tracking-wider">Montant déjà payé</p>
+                            <div class="flex items-center gap-3 mt-1">
+                                <p id="solde-affiche" class="text-2xl font-black text-emerald-950">0 <span class="text-sm font-bold">FCFA</span></p>
+                                <button id="btn-toggle-eye" class="text-emerald-700 hover:text-emerald-900 text-lg cursor-pointer">
+                                    <i id="eye-icon" class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-esp-green text-white p-3 rounded-xl shadow-sm">
+                            <i class="fa-solid fa-wallet text-xl"></i>
                         </div>
                     </div>
-                    <button id="btn-payer" class="w-full bg-esp-blue hover:bg-blue-800 text-white font-bold py-3 rounded-xl transition cursor-pointer shadow-md shadow-blue-900/10">
-                        Procéder au paiement
-                    </button>
+                    <div id="form-paiement-box" class="space-y-4">
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-2">Montant à verser (FCFA)</label><input type="number" id="amount-input" placeholder="Ex: 50000" min="5000" class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none font-semibold bg-white"></div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Moyen de paiement</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-400 text-sm font-medium"><input type="radio" name="operator" value="wave"> Wave</label>
+                                <label class="flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-400 text-sm font-medium"><input type="radio" name="operator" value="om"> Orange Money</label>
+                            </div>
+                        </div>
+                        <button id="btn-payer" class="w-full bg-esp-blue hover:bg-blue-800 text-white font-bold py-3 rounded-xl shadow-md cursor-pointer transition">Procéder au paiement</button>
+                    </div>
                 </div>
+
+                <!-- ONGLET 2 : HISTORIQUE -->
+                <div id="section-nav-history" class="hidden space-y-4">
+                    <h3 class="text-md font-bold text-gray-900 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-esp-blue"></i> Vos transactions récentes</h3>
+                    <div id="transactions-list" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
+                </div>
+
+                <!-- ONGLET 3 : PARAMÈTRES -->
+                <div id="section-nav-settings" class="hidden space-y-5">
+                    <div class="flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded-xl">
+                        <div class="flex items-center gap-3"><i class="fa-solid fa-moon text-gray-500 text-lg"></i><div><p class="text-sm font-bold">Mode Sombre</p><p class="text-[11px] text-gray-400">Adapter l'affichage pour la nuit</p></div></div>
+                        <input type="checkbox" id="toggle-dark-mode" class="w-9 h-5 bg-gray-300 rounded-full appearance-none checked:bg-esp-blue relative cursor-pointer before:content-[''] before:absolute before:w-4 before:h-4 before:bg-white before:rounded-full before:top-0.5 before:left-0.5 checked:before:translate-x-4 before:transition-all">
+                    </div>
+                    <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
+                        <div class="flex items-center gap-3"><i class="fa-solid fa-lock text-gray-500 text-lg"></i><p class="text-sm font-bold">Modifier mon mot de passe</p></div>
+                        <div class="space-y-2 pt-1">
+                            <input type="password" id="settings-new-password" placeholder="Nouveau mot de passe" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white">
+                            <button id="btn-update-pwd" class="bg-gray-900 text-white text-xs px-3 py-1.5 rounded-lg font-bold cursor-pointer hover:bg-slate-800">Mettre à jour</button>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2">
+                        <div class="flex items-center gap-3 text-gray-900 mb-2"><i class="fa-solid fa-laptop-mobile text-gray-500 text-lg"></i><p class="text-sm font-bold">Appareils connectés</p></div>
+                        <div class="text-xs space-y-2">
+                            <div class="flex justify-between items-center border-b border-gray-200 pb-1.5"><span class="font-medium text-emerald-600"><i class="fa-solid fa-circle text-[8px] mr-1"></i> Cet appareil (Session active)</span><span class="text-gray-400 text-[10px]">Dakar, SN</span></div>
+                            <div class="flex justify-between items-center text-gray-400"><span>Mobile Chrome (Android)</span><span class="text-[10px]">Il y a 2h</span></div>
+                        </div>
+                    </div>
+                    <div class="p-3 border border-blue-200 bg-blue-50/50 rounded-xl flex items-center justify-between">
+                        <div class="flex items-center gap-3"><i class="fa-solid fa-headset text-esp-blue text-lg"></i><div><p class="text-sm font-bold text-gray-900">Besoin d'aide ?</p><p class="text-[11px] text-gray-400">Contacter la scolarité de l'ESP</p></div></div>
+                        <a href="mailto:scolarite@esp.sn" class="bg-esp-blue text-white text-xs px-3 py-1.5 rounded-lg font-bold">Écrire</a>
+                    </div>
+                    <button id="btn-logout" class="w-full bg-rose-50 text-rose-600 border border-rose-200 font-bold py-2.5 rounded-xl hover:bg-rose-100 transition cursor-pointer text-sm"><i class="fa-solid fa-right-from-bracket mr-2"></i>Se déconnecter</button>
+                </div>
+
+                <nav class="flex border-t border-gray-200 pt-3 justify-around text-center text-gray-400">
+                    <button id="nav-home" class="flex flex-col items-center gap-1 font-bold text-esp-blue cursor-pointer"><i class="fa-solid fa-house text-lg"></i><span class="text-[11px]">Accueil</span></button>
+                    <button id="nav-history" class="flex flex-col items-center gap-1 font-medium hover:text-gray-600 cursor-pointer"><i class="fa-solid fa-list-check text-lg"></i><span class="text-[11px]">Historique</span></button>
+                    <button id="nav-settings" class="flex flex-col items-center gap-1 font-medium hover:text-gray-600 cursor-pointer"><i class="fa-solid fa-gear text-lg"></i><span class="text-[11px]">Paramètres</span></button>
+                </nav>
             </div>
 
         </div>
@@ -215,313 +190,7 @@
         <p>&copy; 2026 École Supérieure Polytechnique de Dakar. Tous droits réservés.</p>
     </footer>
 
-    <!-- LOGIQUE FIREBASE -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCbsEUQ9YRb87wFu196TZnNrTZntgiGZE8",
-            authDomain: "esp-pay.firebaseapp.com",
-            projectId: "esp-pay",
-            storageBucket: "esp-pay.firebasestorage.app",
-            messagingSenderId: "629871793149",
-            appId: "1:629871793149:web:7522b73742d4d15187bf94"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-
-        const tabsContainer = document.getElementById('tabs-container');
-        const tabLogin = document.getElementById('tab-login');
-        const tabRegister = document.getElementById('tab-register');
-        const loginSection = document.getElementById('login-section');
-        const registerSection = document.getElementById('register-section');
-        const paymentSection = document.getElementById('payment-section');
-
-        const regCycle = document.getElementById('reg-cycle');
-        const regNiveau = document.getElementById('reg-niveau');
-        const regOption = document.getElementById('reg-option');
-        
-        const regDocument = document.getElementById('reg-document');
-        const regPhoto = document.getElementById('reg-photo');
-        const labelDocument = document.getElementById('label-document');
-        const labelPhoto = document.getElementById('label-photo');
-        const helpDocument = document.getElementById('help-document');
-        const btnRegister = document.getElementById('btn-register');
-
-        const structuresESP = {
-            "DUT": {
-                niveaux: ["DUT 1", "DUT 2"],
-                options: {
-                    "DUT 1": ["Génie Logiciel (GL)", "Systèmes Réseaux Télécoms (SRT)"],
-                    "DUT 2": ["Génie Logiciel (GL)", "Systèmes Réseaux Télécoms (SRT)"]
-                }
-            },
-            "DIC": {
-                niveaux: ["DIC 1", "DIC 2", "DIC 3"],
-                options: {
-                    "DIC 1": ["Tronc Commun"],
-                    "DIC 2": ["Génie Logiciel (GL)", "Réseaux et Télécoms (RT)"],
-                    "DIC 3": ["Génie Logiciel (GL)", "Réseaux et Télécoms (RT)"]
-                }
-            },
-            "Licence Pro": {
-                niveaux: ["Licence 1", "Licence 2", "Licence 3"],
-                options: {
-                    "Licence 1": ["GLSI", "SRT"],
-                    "Licence 2": ["GLSI", "SRT"],
-                    "Licence 3": ["GLSI", "SRT"]
-                }
-            },
-            "Master": {
-                niveaux: ["Master 1", "Master 2"],
-                options: {
-                    "Master 1": ["Sécurité Informatique & Cloud", "Data Science / IA", "Génie Logiciel Avancé"],
-                    "Master 2": ["Cloud Security / DevSecOps", "Intelligence Artificielle", "Management des SI"]
-                }
-            }
-        };
-
-        regCycle.addEventListener('change', () => {
-            const cycleSelectionne = regCycle.value;
-            regNiveau.innerHTML = '<option value="">-- Choisir la classe --</option>';
-            regOption.innerHTML = '<option value="">Sélectionnez d\'abord le niveau</option>';
-            regOption.disabled = true;
-
-            if (cycleSelectionne && structuresESP[cycleSelectionne]) {
-                regNiveau.disabled = false;
-                structuresESP[cycleSelectionne].niveaux.forEach(niv => {
-                    const opt = document.createElement('option');
-                    opt.value = niv; opt.textContent = niv;
-                    regNiveau.appendChild(opt);
-                });
-            } else {
-                regNiveau.disabled = true;
-            }
-        });
-
-        regNiveau.addEventListener('change', () => {
-            const cycleSelectionne = regCycle.value;
-            const niveauSelectionne = regNiveau.value;
-            regOption.innerHTML = '<option value="">-- Choisir l\'option --</option>';
-
-            if (cycleSelectionne && niveauSelectionne && structuresESP[cycleSelectionne].options[niveauSelectionne]) {
-                regOption.disabled = false;
-                structuresESP[cycleSelectionne].options[niveauSelectionne].forEach(optText => {
-                    const opt = document.createElement('option');
-                    opt.value = optText; opt.textContent = optText;
-                    regOption.appendChild(opt);
-                });
-            } else {
-                regOption.disabled = true;
-            }
-
-            if (niveauSelectionne === "DUT 1" || niveauSelectionne === "Licence 1" || niveauSelectionne === "DIC 1") {
-                labelDocument.innerText = "Numéro de Carte d'Identité (CNI)";
-                labelPhoto.innerText = "Photo de la CNI (Recto/Verso)";
-                regDocument.placeholder = "Ex: 1755XXXXXXXXX";
-                helpDocument.innerText = "Utilisez votre CNI en attendant la délivrance de votre carte étudiant.";
-            } else {
-                labelDocument.innerText = "Numéro de Carte Étudiant";
-                labelPhoto.innerText = "Photo de la Carte Étudiant";
-                regDocument.placeholder = "Ex: 2026ESP9999";
-                helpDocument.innerText = "Champs requis pour la vérification administrative.";
-            }
-        });
-
-        function showToast(message, type = 'error') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            const bgClass = type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900';
-            const iconClass = type === 'success' ? 'fa-circle-check text-emerald-600' : 'fa-circle-exclamation text-rose-600';
-            toast.className = `flex items-center gap-3 p-4 rounded-xl border ${bgClass} shadow-lg transform translate-x-full transition-all duration-300 ease-out opacity-0 text-sm font-medium`;
-            toast.innerHTML = `<i class="fa-solid ${iconClass} text-lg"></i><div class="flex-grow">${message}</div>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
-            setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 4000);
-        }
-
-        function showCustomModal(title, message, type = 'success') {
-            const modal = document.getElementById('custom-modal');
-            const modalBox = modal.querySelector('div');
-            const iconContainer = document.getElementById('modal-icon');
-            const btnClose = document.getElementById('modal-btn-close');
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-message').innerText = message;
-            
-            if (type === 'success') {
-                iconContainer.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 bg-emerald-100 text-emerald-600 text-xl";
-                iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
-                btnClose.className = "w-full bg-esp-blue hover:bg-blue-800 py-2.5 rounded-xl text-sm font-bold text-white transition cursor-pointer";
-            } else {
-                iconContainer.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 bg-rose-100 text-rose-600 text-xl";
-                iconContainer.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-                btnClose.className = "w-full bg-rose-600 hover:bg-rose-700 py-2.5 rounded-xl text-sm font-bold text-white transition cursor-pointer";
-            }
-            modal.classList.remove('hidden'); modal.classList.add('flex');
-            setTimeout(() => { modal.classList.remove('opacity-0'); modalBox.classList.remove('scale-95'); }, 10);
-            btnClose.onclick = () => {
-                modal.classList.add('opacity-0'); modalBox.classList.add('scale-95');
-                setTimeout(() => { modal.classList.remove('flex'); modal.classList.add('hidden'); }, 300);
-            };
-        }
-
-        tabLogin.addEventListener('click', () => {
-            tabLogin.className = "w-1/2 pb-3 font-bold text-esp-blue border-b-2 border-esp-blue text-center cursor-pointer";
-            tabRegister.className = "w-1/2 pb-3 font-medium text-gray-400 text-center hover:text-gray-600 cursor-pointer";
-            loginSection.classList.remove('hidden'); registerSection.classList.add('hidden');
-        });
-        tabRegister.addEventListener('click', () => {
-            tabRegister.className = "w-1/2 pb-3 font-bold text-esp-blue border-b-2 border-esp-blue text-center cursor-pointer";
-            tabLogin.className = "w-1/2 pb-3 font-medium text-gray-400 text-center hover:text-gray-600 cursor-pointer";
-            registerSection.classList.remove('hidden'); loginSection.classList.add('hidden');
-        });
-
-        // INSCRIPTION
-        btnRegister.addEventListener('click', async () => {
-            const prenom = document.getElementById('reg-prenom').value.trim();
-            const nom = document.getElementById('reg-nom').value.trim();
-            const cycle = regCycle.value;
-            const niveau = regNiveau.value;
-            const option = regOption.value;
-            const docValue = regDocument.value.trim().toUpperCase();
-            const photoFichier = regPhoto.files[0];
-            const email = document.getElementById('reg-email').value.trim().toLowerCase();
-            const password = document.getElementById('reg-password').value;
-            const passwordConfirm = document.getElementById('reg-password-confirm').value;
-
-            if (!prenom || !nom || !cycle || !niveau || !option || !docValue || !photoFichier || !email || !password) {
-                showToast("Veuillez remplir tous les champs.", "error"); return;
-            }
-            if (!email.endsWith('@esp.sn') && !email.endsWith('@ucad.edu.sn')) {
-                showToast("Seuls les e-mails @esp.sn et @ucad.edu.sn sont autorisés.", "error"); return;
-            }
-            if (password !== passwordConfirm) {
-                showToast("Les deux mots de passe ne correspondent pas.", "error"); return;
-            }
-
-            btnRegister.disabled = true;
-            btnRegister.innerText = "Envoi en cours...";
-
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-                await sendEmailVerification(user);
-
-                const estPremiereAnnee = (niveau === "DUT 1" || niveau === "Licence 1" || niveau === "DIC 1");
-                const labelType = estPremiereAnnee ? "CNI" : "Carte_Etudiant";
-                const extension = photoFichier.name.split('.').pop();
-                const storageRef = ref(storage, `justificatifs/${user.uid}_${labelType}.${extension}`);
-                
-                const snapshot = await uploadBytes(storageRef, photoFichier);
-                const downloadURL = await getDownloadURL(snapshot.ref);
-
-                await setDoc(doc(db, "etudiants", user.uid), {
-                    prenom: prenom,
-                    nom: nom,
-                    cycle: cycle,
-                    niveau: niveau,
-                    option: option,
-                    email: email,
-                    montant_deja_paye: 0,
-                    identifiant_type: estPremiereAnnee ? "CNI" : "Carte Étudiant",
-                    identifiant_valeur: docValue,
-                    identifiant_url_photo: downloadURL
-                });
-
-                showCustomModal("Validation requise", `Un mail de confirmation a été envoyé à : ${email}`, "success");
-                tabLogin.click();
-            } catch (error) {
-                showToast(error.message, "error");
-            } finally {
-                btnRegister.disabled = false;
-                btnRegister.innerText = "Créer mon compte et envoyer le mail";
-            }
-        });
-
-        // CONNEXION
-        document.getElementById('btn-login').addEventListener('click', async () => {
-            const email = document.getElementById('login-email').value.trim().toLowerCase();
-            const password = document.getElementById('login-password').value;
-
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                if (!user.emailVerified) {
-                    showToast("Veuillez vérifier votre boîte e-mail.", "error");
-                    await signOut(auth); return;
-                }
-
-                const docSnap = await getDoc(doc(db, "etudiants", user.uid));
-                if (docSnap.exists()) chargerDashboardEtudiant(docSnap.data());
-            } catch (error) {
-                showToast("Identifiants de connexion invalides.", "error");
-            }
-        });
-
-        function chargerDashboardEtudiant(data) {
-            document.getElementById('student-name').innerText = `${data.prenom} ${data.nom}`;
-            document.getElementById('student-info').innerText = `${data.identifiant_type} : ${data.identifiant_valeur} | ${data.niveau} (${data.option})`;
-            
-            tabsContainer.classList.add('hidden');
-            loginSection.classList.add('hidden');
-            paymentSection.classList.remove('hidden');
-
-            const formPaiement = document.querySelector('#payment-section .space-y-4');
-            const carteSolde = document.querySelector('#payment-section .bg-emerald-50');
-
-            if (data.cycle === "DUT" || data.cycle === "DIC") {
-                carteSolde.classList.add('hidden');
-                if (formPaiement) formPaiement.classList.add('hidden');
-                
-                let msg = document.getElementById('msg-public-scolarite');
-                if (!msg) {
-                    msg = document.createElement('div');
-                    msg.id = 'msg-public-scolarite';
-                    msg.className = "bg-blue-50 border border-blue-200 rounded-2xl p-5 text-center space-y-3";
-                    msg.innerHTML = `
-                        <div class="text-esp-blue h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto text-xl"><i class="fa-solid fa-circle-info"></i></div>
-                        <h4 class="font-bold text-gray-950">Régime Public</h4>
-                        <p class="text-gray-600 text-xs">Exonéré de frais de scolarité sur cette plateforme.</p>
-                    `;
-                    document.getElementById('payment-section').appendChild(msg);
-                } else msg.classList.remove('hidden');
-            } else {
-                carteSolde.classList.remove('hidden');
-                if (formPaiement) formPaiement.classList.remove('hidden');
-                document.getElementById('solde-affiche').innerHTML = `${data.montant_deja_paye.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
-            }
-        }
-
-        // PAIEMENT VIA FIRESTORE
-        document.getElementById('btn-payer').addEventListener('click', async () => {
-            const montant = parseInt(document.getElementById('amount-input').value);
-            const op = document.querySelector('input[name="operator"]:checked');
-            if (!montant || montant < 5000 || !op) {
-                showToast("Sélectionnez un opérateur et un montant valide (min 5000).", "error"); return;
-            }
-
-            try {
-                const refDoc = doc(db, "etudiants", auth.currentUser.uid);
-                const snap = await getDoc(refDoc);
-                if (snap.exists()) {
-                    const nouveauSolde = snap.data().montant_deja_paye + montant;
-                    await updateDoc(refDoc, { montant_deja_paye: nouveauSolde });
-                    document.getElementById('solde-affiche').innerHTML = `${nouveauSolde.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
-                    showCustomModal("Succès !", "Paiement enregistré.", "success");
-                }
-            } catch (e) { showToast("Erreur transaction.", "error"); }
-        });
-
-        document.getElementById('btn-logout').addEventListener('click', async () => {
-            await signOut(auth); location.reload();
-        });
-    </script>
+    <!-- LIAISON DU FICHIER JAVASCRIPT ICI -->
+    <script type="module" src="app.js"></script>
 </body>
 </html>
