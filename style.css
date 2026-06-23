@@ -1,11 +1,24 @@
-/* Couleurs officielles de l'ESP */
+/* Couleurs ESP */
 .bg-esp-blue { background-color: #004b93; }
 .text-esp-blue { color: #004b93; }
 .border-esp-blue { border-color: #004b93; }
 .bg-esp-green { background-color: #55b748; }
 .text-esp-green { color: #55b748; }
 
-/* Classes utilitaires pour le Mode Sombre manuel */
+/* Scroll personnalisé */
+#transactions-list::-webkit-scrollbar {
+    width: 4px;
+}
+#transactions-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 8px;
+}
+#transactions-list::-webkit-scrollbar-thumb {
+    background: #004b93;
+    border-radius: 8px;
+}
+
+/* Dark Mode */
 .dark-mode {
     background-color: #0f172a !important;
     color: #f8fafc !important;
@@ -15,15 +28,42 @@
     color: #f1f5f9 !important;
     border-color: #334155 !important;
 }
-.dark-mode .text-gray-950, .dark-mode .text-gray-900, .dark-mode .text-gray-800 {
-    color: #f8fafc !important;
-}
-.dark-mode .text-gray-500, .dark-mode .text-gray-400 {
-    color: #94a3b8 !important;
-}
-.dark-mode .bg-gray-50, .dark-mode .bg-gray-100 {
+.dark-mode .bg-gray-50,
+.dark-mode .bg-gray-100 {
     background-color: #334155 !important;
 }
-.dark-mode border {
+.dark-mode .text-gray-950,
+.dark-mode .text-gray-900,
+.dark-mode .text-gray-800 {
+    color: #f8fafc !important;
+}
+.dark-mode .text-gray-500,
+.dark-mode .text-gray-400 {
+    color: #94a3b8 !important;
+}
+.dark-mode .border-gray-100,
+.dark-mode .border-gray-200,
+.dark-mode .border-gray-300 {
     border-color: #334155 !important;
+}
+.dark-mode .bg-emerald-50 {
+    background-color: #064e3b !important;
+}
+.dark-mode .text-emerald-950 {
+    color: #a7f3d0 !important;
+}
+.dark-mode .bg-blue-50 {
+    background-color: #172554 !important;
+}
+.dark-mode input,
+.dark-mode select {
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-color: #475569 !important;
+}
+.dark-mode input::placeholder {
+    color: #94a3b8 !important;
+}
+.dark-mode #custom-modal .bg-white {
+    background-color: #1e293b !important;
 }

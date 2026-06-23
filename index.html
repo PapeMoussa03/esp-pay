@@ -3,194 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP Pay - Espace Étudiant Complet</title>
+    <title>ESP Pay - Espace Étudiant</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- LIAISON DU FICHIER CSS ICI -->
-    <link rel="stylesheet" href="style.css">
+    <style>
+        .bg-esp-blue { background-color: #004b93; }
+        .text-esp-blue { color: #004b93; }
+        .border-esp-blue { border-color: #004b93; }
+        .bg-esp-green { background-color: #55b748; }
+        .text-esp-green { color: #55b748; }
+        .border-esp-green { border-color: #55b748; }
+    </style>
 </head>
-<body id="app-body" class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col justify-between transition-colors duration-300">
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <!-- COMPOSANTS DE NOTIFICATION DYNAMIQUES -->
-    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full px-4 md:px-0"></div>
+    <!-- ====== TOAST ====== -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full px-4"></div>
 
-    <div id="custom-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0">
-        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-gray-100 p-6 text-center transform scale-95 transition-all duration-300">
+    <!-- ====== MODAL ====== -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-gray-100 p-6 text-center">
             <div id="modal-icon" class="mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4"></div>
             <h3 id="modal-title" class="text-lg font-bold text-gray-950 mb-2"></h3>
             <p id="modal-message" class="text-sm text-gray-500 mb-6"></p>
-            <button id="modal-btn-close" class="w-full py-2.5 rounded-xl text-sm font-bold text-white transition cursor-pointer">
+            <button id="modal-btn-close" class="w-full py-2.5 rounded-xl text-sm font-bold text-white transition cursor-pointer bg-esp-blue hover:bg-blue-800">
                 D'accord
             </button>
         </div>
     </div>
 
-    <!-- En-tête / Navbar -->
+    <!-- ====== HEADER ====== -->
     <header class="bg-esp-blue text-white shadow-md p-3">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div id="logo-container" class="flex items-center justify-center bg-white p-1 rounded-lg shadow-sm h-11 px-2">
-                    <img src="ESP.jpg" alt="Logo ESP" class="h-9 w-auto object-contain">
+                <div class="flex items-center justify-center bg-white p-1 rounded-lg shadow-sm h-11 px-2">
+                    <img src="ESP.jpg" alt="Logo ESP" class="h-9 w-auto object-contain" onerror="this.style.display='none'">
                 </div>
-                <h1 class="text-xl font-black tracking-wide leading-none">ESP PAY</h1>
+                <h1 class="text-xl font-black tracking-wide">ESP PAY</h1>
             </div>
-            <span id="badge-mode" class="text-xs bg-white/10 text-blue-100 px-3 py-1 rounded-full font-medium backdrop-blur-sm">Mode Cloud Actif</span>
+            <span id="badge-mode" class="text-xs bg-white/10 text-blue-100 px-3 py-1 rounded-full font-medium">Phase 2</span>
         </div>
     </header>
 
-    <!-- Contenu Principal (Identique au précédent) -->
+    <!-- ====== MAIN ====== -->
     <main class="container mx-auto p-4 flex-grow flex items-center justify-center">
         <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">
-            
-            <!-- Sélecteur d'onglets initial (Connexion / Inscription) -->
+
+            <!-- ====== ONGLETS ====== -->
             <div id="tabs-container" class="flex border-b border-gray-200 mb-6">
-                <button id="tab-login" class="w-1/2 pb-3 font-bold text-esp-blue border-b-2 border-esp-blue text-center transition cursor-pointer">Connexion</button>
-                <button id="tab-register" class="w-1/2 pb-3 font-medium text-gray-400 text-center transition hover:text-gray-600 cursor-pointer">Inscription</button>
+                <button id="tab-login" class="w-1/2 pb-3 font-bold text-esp-blue border-b-2 border-esp-blue text-center cursor-pointer transition">
+                    Connexion
+                </button>
+                <button id="tab-register" class="w-1/2 pb-3 font-medium text-gray-400 text-center cursor-pointer transition hover:text-gray-600">
+                    Inscription
+                </button>
             </div>
 
-            <!-- FORMULAIRE 1 : CONNEXION -->
+            <!-- ============================================================ -->
+            <!-- ====== SECTION CONNEXION ====== -->
+            <!-- ============================================================ -->
             <div id="login-section" class="space-y-6">
-                <!-- ... (Même code de connexion qu'avant) ... -->
                 <div class="text-center">
                     <h2 class="text-xl font-bold text-gray-950">Accéder à votre espace</h2>
                     <p class="text-gray-500 text-xs mt-1">Connectez-vous avec vos identifiants universitaires</p>
                 </div>
-                <div class="space-y-4">
+                <form id="login-form" class="space-y-4" novalidate>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Mail Universitaire</label>
-                        <input type="email" id="login-email" placeholder="prenom.nom@esp.sn" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm bg-white">
+                        <input type="email" id="login-email" placeholder="prenom.nom@esp.sn" 
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Mot de passe</label>
-                        <input type="password" id="login-password" placeholder="••••••••" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm bg-white">
+                        <input type="password" id="login-password" placeholder="••••••••" 
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm">
                     </div>
-                    <button id="btn-login" class="w-full bg-esp-blue hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl transition cursor-pointer shadow-md shadow-blue-900/10">Se connecter</button>
-                </div>
+                    <button type="submit" id="btn-login" 
+                            class="w-full bg-esp-blue hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl transition cursor-pointer shadow-md flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                        Se connecter
+                    </button>
+                </form>
             </div>
 
-            <!-- FORMULAIRE 2 : INSCRIPTION -->
+            <!-- ============================================================ -->
+            <!-- ====== SECTION INSCRIPTION ====== -->
+            <!-- ============================================================ -->
             <div id="register-section" class="hidden space-y-4">
-                 <!-- ... (Même code d'inscription qu'avant) ... -->
-                 <div class="text-center"><h2 class="text-xl font-bold text-gray-950">Créer un compte</h2></div>
-                 <div class="space-y-3">
-                     <div class="grid grid-cols-2 gap-2">
-                         <div><label class="block text-xs font-semibold text-gray-700 mb-1">Prénom</label><input type="text" id="reg-prenom" placeholder="Awa" class="w-full px-3 py-2 border border-gray-300 rounded-xl outline-none text-sm bg-white"></div>
-                         <div><label class="block text-xs font-semibold text-gray-700 mb-1">Nom</label><input type="text" id="reg-nom" placeholder="Ndiaye" class="w-full px-3 py-2 border border-gray-300 rounded-xl outline-none text-sm bg-white"></div>
-                     </div>
-                     <div>
-                         <label class="block text-xs font-semibold text-gray-700 mb-1">Cycle</label>
-                         <select id="reg-cycle" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white font-medium">
-                             <option value="">-- Choisir un cycle --</option>
-                             <option value="DUT">DUT (Public)</option>
-                             <option value="DIC">DIC (Public)</option>
-                             <option value="Licence Pro">Licence Professionnelle (Privé)</option>
-                             <option value="Master">Master (Privé)</option>
-                         </select>
-                     </div>
-                     <div><label class="block text-xs font-semibold text-gray-700 mb-1">Classe / Niveau</label><select id="reg-niveau" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white font-medium" disabled><option value="">Sélectionnez d'abord le cycle</option></select></div>
-                     <div><label class="block text-xs font-semibold text-gray-700 mb-1">Option / Spécialisation</label><select id="reg-option" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white font-medium" disabled><option value="">Sélectionnez d'abord la classe</option></select></div>
-                     <div class="space-y-3 p-3 bg-gray-50 border border-gray-200 rounded-xl">
-                         <div><label id="label-document" class="block text-xs font-semibold text-gray-700 mb-1">Numéro de Carte Étudiant</label><input type="text" id="reg-document" placeholder="Ex: 2026ESP9999" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm uppercase bg-white"></div>
-                         <div><label id="label-photo" class="block text-xs font-semibold text-gray-700 mb-1">Photo de la Carte</label><input type="file" id="reg-photo" accept="image/*" class="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs bg-white text-gray-500 cursor-pointer"></div>
-                         <p id="help-document" class="text-[10px] text-gray-400">Champs requis pour la vérification.</p>
-                     </div>
-                     <div><label class="block text-xs font-semibold text-gray-700 mb-1">Mail Universitaire</label><input type="email" id="reg-email" placeholder="prenom.nom@esp.sn" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white"></div>
-                     <div class="grid grid-cols-2 gap-2">
-                         <div><label class="block text-xs font-semibold text-gray-700 mb-1">Mot de passe</label><input type="password" id="reg-password" placeholder="••••••••" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white"></div>
-                         <div><label class="block text-xs font-semibold text-gray-700 mb-1">Confirmation</label><input type="password" id="reg-password-confirm" placeholder="••••••••" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white"></div>
-                     </div>
-                     <button id="btn-register" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-sm mt-2 cursor-pointer">Créer mon compte</button>
-                 </div>
+                <div class="text-center">
+                    <h2 class="text-xl font-bold text-gray-950">Créer un compte</h2>
+                    <p class="text-gray-500 text-xs mt-1">Remplissez tous les champs pour vous inscrire</p>
+                </div>
+                <form id="register-form" class="space-y-3" novalidate>
+
+                    <!-- Prénom + Nom -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Prénom</label>
+                            <input type="text" id="reg-prenom" placeholder="Awa" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl outline-none text-sm focus:ring-2 focus:ring-esp-blue">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Nom</label>
+                            <input type="text" id="reg-nom" placeholder="Ndiaye" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl outline-none text-sm focus:ring-2 focus:ring-esp-blue">
+                        </div>
+                    </div>
+
+                    <!-- Cycle -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Cycle</label>
+                        <select id="reg-cycle" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-esp-blue outline-none">
+                            <option value="">-- Choisir un cycle --</option>
+                            <option value="DUT">DUT (Public)</option>
+                            <option value="DIC">DIC (Public)</option>
+                            <option value="Licence Pro">Licence Professionnelle (Privé)</option>
+                            <option value="Master">Master (Privé)</option>
+                        </select>
+                    </div>
+
+                    <!-- Classe / Niveau -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Classe / Niveau</label>
+                        <select id="reg-niveau" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-esp-blue outline-none" 
+                                disabled>
+                            <option value="">Sélectionnez d'abord le cycle</option>
+                        </select>
+                    </div>
+
+                    <!-- Option -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Option / Spécialisation</label>
+                        <select id="reg-option" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-esp-blue outline-none" 
+                                disabled>
+                            <option value="">Sélectionnez d'abord la classe</option>
+                        </select>
+                    </div>
+
+                    <!-- Numéro Carte + Photo -->
+                    <div class="space-y-3 p-3 bg-gray-50 border border-gray-200 rounded-xl">
+                        <div>
+                            <label id="label-document" class="block text-xs font-semibold text-gray-700 mb-1">Numéro de Carte Étudiant</label>
+                            <input type="text" id="reg-document" placeholder="Ex: 2026ESP9999" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm uppercase outline-none focus:ring-2 focus:ring-esp-blue">
+                        </div>
+                        <div>
+                            <label id="label-photo" class="block text-xs font-semibold text-gray-700 mb-1">Photo de la Carte</label>
+                            <input type="file" id="reg-photo" accept="image/*" 
+                                   class="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs cursor-pointer">
+                        </div>
+                        <p id="help-document" class="text-[10px] text-gray-400">Champs requis pour la vérification administrative.</p>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Mail Universitaire</label>
+                        <input type="email" id="reg-email" placeholder="prenom.nom@esp.sn" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-esp-blue">
+                    </div>
+
+                    <!-- Mot de passe + Confirmation -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Mot de passe</label>
+                            <input type="password" id="reg-password" placeholder="••••••••" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-esp-blue">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Confirmation</label>
+                            <input type="password" id="reg-password-confirm" placeholder="••••••••" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-esp-blue">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-register" 
+                            class="w-full bg-esp-blue hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-sm mt-2 cursor-pointer transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-lock"></i>
+                        Créer mon compte
+                    </button>
+                </form>
             </div>
 
-            <!-- ESPACE CONNECTÉ MULTI-ONGLETS -->
-            <div id="logged-area" class="hidden space-y-6">
-                 <!-- ... (Même code de l'espace connecté qu'avant : Onglet Home, Onglet History, Onglet Settings, NavBar) ... -->
-                 <div class="border-b border-gray-100 pb-3 flex justify-between items-start">
+            <!-- ============================================================ -->
+            <!-- ====== DASHBOARD (ESPACE CONNECTÉ) ====== -->
+            <!-- ============================================================ -->
+            <div id="dashboard-section" class="hidden space-y-6">
+
+                <!-- En-tête -->
+                <div class="border-b border-gray-100 pb-3 flex justify-between items-start">
                     <div>
                         <h3 id="student-name" class="text-lg font-bold text-gray-900">...</h3>
-                        <p id="student-info" class="text-xs text-esp-blue font-semibold">Matricule : --</p>
+                        <p id="student-info" class="text-xs text-esp-blue font-semibold">...</p>
                     </div>
+                    <span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full">
+                        <i class="fa-solid fa-circle text-[6px] mr-1"></i>Connecté
+                    </span>
                 </div>
 
-                <!-- ONGLET 1 : FINANCES / PAIEMENT -->
-                <div id="section-nav-home" class="space-y-6">
-                    <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex justify-between items-center relative overflow-hidden">
+                <!-- Message de bienvenue -->
+                <div class="bg-esp-blue/5 border border-esp-blue/20 rounded-2xl p-4 text-center">
+                    <p class="text-sm text-gray-700">
+                        🎉 Bienvenue sur ESP Pay !
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        Vous êtes connecté avec succès. Votre compte est vérifié.
+                    </p>
+                </div>
+
+                <!-- Carte des informations -->
+                <div class="bg-white border border-gray-200 rounded-2xl p-4 space-y-2">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Vos informations</p>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
                         <div>
-                            <p class="text-xs text-emerald-800 font-bold uppercase tracking-wider">Montant déjà payé</p>
-                            <div class="flex items-center gap-3 mt-1">
-                                <p id="solde-affiche" class="text-2xl font-black text-emerald-950">0 <span class="text-sm font-bold">FCFA</span></p>
-                                <button id="btn-toggle-eye" class="text-emerald-700 hover:text-emerald-900 text-lg cursor-pointer">
-                                    <i id="eye-icon" class="fa-solid fa-eye"></i>
-                                </button>
-                            </div>
+                            <p class="text-xs text-gray-400">Cycle</p>
+                            <p id="dashboard-cycle" class="font-semibold text-gray-900">-</p>
                         </div>
-                        <div class="bg-esp-green text-white p-3 rounded-xl shadow-sm">
-                            <i class="fa-solid fa-wallet text-xl"></i>
-                        </div>
-                    </div>
-                    <div id="form-paiement-box" class="space-y-4">
-                        <div><label class="block text-sm font-semibold text-gray-700 mb-2">Montant à verser (FCFA)</label><input type="number" id="amount-input" placeholder="Ex: 50000" min="5000" class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none font-semibold bg-white"></div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Moyen de paiement</label>
-                            <div class="grid grid-cols-2 gap-3">
-                                <label class="flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-400 text-sm font-medium"><input type="radio" name="operator" value="wave"> Wave</label>
-                                <label class="flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-400 text-sm font-medium"><input type="radio" name="operator" value="om"> Orange Money</label>
-                            </div>
+                            <p class="text-xs text-gray-400">Niveau</p>
+                            <p id="dashboard-niveau" class="font-semibold text-gray-900">-</p>
                         </div>
-                        <button id="btn-payer" class="w-full bg-esp-blue hover:bg-blue-800 text-white font-bold py-3 rounded-xl shadow-md cursor-pointer transition">Procéder au paiement</button>
+                        <div class="col-span-2">
+                            <p class="text-xs text-gray-400">Option</p>
+                            <p id="dashboard-option" class="font-semibold text-gray-900">-</p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-xs text-gray-400">Identifiant</p>
+                            <p id="dashboard-identifiant" class="font-semibold text-gray-900">-</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- ONGLET 2 : HISTORIQUE -->
-                <div id="section-nav-history" class="hidden space-y-4">
-                    <h3 class="text-md font-bold text-gray-900 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-esp-blue"></i> Vos transactions récentes</h3>
-                    <div id="transactions-list" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
+                <!-- Régime -->
+                <div id="regime-card" class="rounded-2xl p-4 text-center">
+                    <p id="regime-text" class="font-bold text-sm">-</p>
+                    <p id="regime-desc" class="text-xs mt-1">-</p>
                 </div>
 
-                <!-- ONGLET 3 : PARAMÈTRES -->
-                <div id="section-nav-settings" class="hidden space-y-5">
-                    <div class="flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded-xl">
-                        <div class="flex items-center gap-3"><i class="fa-solid fa-moon text-gray-500 text-lg"></i><div><p class="text-sm font-bold">Mode Sombre</p><p class="text-[11px] text-gray-400">Adapter l'affichage pour la nuit</p></div></div>
-                        <input type="checkbox" id="toggle-dark-mode" class="w-9 h-5 bg-gray-300 rounded-full appearance-none checked:bg-esp-blue relative cursor-pointer before:content-[''] before:absolute before:w-4 before:h-4 before:bg-white before:rounded-full before:top-0.5 before:left-0.5 checked:before:translate-x-4 before:transition-all">
-                    </div>
-                    <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
-                        <div class="flex items-center gap-3"><i class="fa-solid fa-lock text-gray-500 text-lg"></i><p class="text-sm font-bold">Modifier mon mot de passe</p></div>
-                        <div class="space-y-2 pt-1">
-                            <input type="password" id="settings-new-password" placeholder="Nouveau mot de passe" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white">
-                            <button id="btn-update-pwd" class="bg-gray-900 text-white text-xs px-3 py-1.5 rounded-lg font-bold cursor-pointer hover:bg-slate-800">Mettre à jour</button>
-                        </div>
-                    </div>
-                    <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2">
-                        <div class="flex items-center gap-3 text-gray-900 mb-2"><i class="fa-solid fa-laptop-mobile text-gray-500 text-lg"></i><p class="text-sm font-bold">Appareils connectés</p></div>
-                        <div class="text-xs space-y-2">
-                            <div class="flex justify-between items-center border-b border-gray-200 pb-1.5"><span class="font-medium text-emerald-600"><i class="fa-solid fa-circle text-[8px] mr-1"></i> Cet appareil (Session active)</span><span class="text-gray-400 text-[10px]">Dakar, SN</span></div>
-                            <div class="flex justify-between items-center text-gray-400"><span>Mobile Chrome (Android)</span><span class="text-[10px]">Il y a 2h</span></div>
-                        </div>
-                    </div>
-                    <div class="p-3 border border-blue-200 bg-blue-50/50 rounded-xl flex items-center justify-between">
-                        <div class="flex items-center gap-3"><i class="fa-solid fa-headset text-esp-blue text-lg"></i><div><p class="text-sm font-bold text-gray-900">Besoin d'aide ?</p><p class="text-[11px] text-gray-400">Contacter la scolarité de l'ESP</p></div></div>
-                        <a href="mailto:scolarite@esp.sn" class="bg-esp-blue text-white text-xs px-3 py-1.5 rounded-lg font-bold">Écrire</a>
-                    </div>
-                    <button id="btn-logout" class="w-full bg-rose-50 text-rose-600 border border-rose-200 font-bold py-2.5 rounded-xl hover:bg-rose-100 transition cursor-pointer text-sm"><i class="fa-solid fa-right-from-bracket mr-2"></i>Se déconnecter</button>
-                </div>
-
-                <nav class="flex border-t border-gray-200 pt-3 justify-around text-center text-gray-400">
-                    <button id="nav-home" class="flex flex-col items-center gap-1 font-bold text-esp-blue cursor-pointer"><i class="fa-solid fa-house text-lg"></i><span class="text-[11px]">Accueil</span></button>
-                    <button id="nav-history" class="flex flex-col items-center gap-1 font-medium hover:text-gray-600 cursor-pointer"><i class="fa-solid fa-list-check text-lg"></i><span class="text-[11px]">Historique</span></button>
-                    <button id="nav-settings" class="flex flex-col items-center gap-1 font-medium hover:text-gray-600 cursor-pointer"><i class="fa-solid fa-gear text-lg"></i><span class="text-[11px]">Paramètres</span></button>
-                </nav>
+                <!-- Déconnexion -->
+                <button id="btn-logout" 
+                        class="w-full bg-rose-50 text-rose-600 border border-rose-200 font-bold py-2.5 rounded-xl hover:bg-rose-100 transition cursor-pointer text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Se déconnecter
+                </button>
             </div>
 
         </div>
     </main>
 
+    <!-- ====== FOOTER ====== -->
     <footer class="bg-gray-900 text-gray-400 text-center text-xs p-4 border-t-4 border-esp-green">
         <p>&copy; 2026 École Supérieure Polytechnique de Dakar. Tous droits réservés.</p>
     </footer>
 
-    <!-- LIAISON DU FICHIER JAVASCRIPT ICI -->
     <script type="module" src="app.js"></script>
 </body>
 </html>

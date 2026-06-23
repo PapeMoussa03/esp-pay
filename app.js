@@ -1,9 +1,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword,
+    sendEmailVerification, 
+    signOut,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// Remplacez par vos vraies clés Firebase
+// ============================================================
+// CONFIGURATION FIREBASE
+// ============================================================
 const firebaseConfig = {
     apiKey: "AIzaSyCbsEUQ9YRb87wFu196TZnNrTZntgiGZE8",
     authDomain: "esp-pay.firebaseapp.com",
@@ -15,330 +22,422 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
 
-// Variables Globales d'Affichage du Solde
-let montantReelGlobal = 0;
-let soldeMasque = false;
+// ============================================================
+// STRUCTURES ESP
+// ============================================================
+const structuresESP = {
+    "DUT": { 
+        niveaux: ["DUT 1", "DUT 2"], 
+        options: { 
+            "DUT 1": ["Génie Logiciel (GL)", "Systèmes Réseaux Télécoms (SRT)"], 
+            "DUT 2": ["Génie Logiciel (GL)", "Systèmes Réseaux Télécoms (SRT)"] 
+        } 
+    },
+    "DIC": { 
+        niveaux: ["DIC 1", "DIC 2", "DIC 3"], 
+        options: { 
+            "DIC 1": ["Tronc Commun"], 
+            "DIC 2": ["Génie Logiciel (GL)", "Réseaux et Télécoms (RT)"], 
+            "DIC 3": ["Génie Logiciel (GL)", "Réseaux et Télécoms (RT)"] 
+        } 
+    },
+    "Licence Pro": { 
+        niveaux: ["Licence 1", "Licence 2", "Licence 3"], 
+        options: { 
+            "Licence 1": ["GLSI", "SRT"], 
+            "Licence 2": ["GLSI", "SRT"], 
+            "Licence 3": ["GLSI", "SRT"] 
+        } 
+    },
+    "Master": { 
+        niveaux: ["Master 1", "Master 2"], 
+        options: { 
+            "Master 1": ["Sécurité Informatique & Cloud", "Data Science / IA", "Génie Logiciel Avancé"], 
+            "Master 2": ["Cloud Security / DevSecOps", "Intelligence Artificielle", "Management des SI"] 
+        } 
+    }
+};
 
-// Sélections DOM
+// ============================================================
+// RÉFÉRENCES DOM
+// ============================================================
 const tabsContainer = document.getElementById('tabs-container');
 const loginSection = document.getElementById('login-section');
 const registerSection = document.getElementById('register-section');
-const loggedArea = document.getElementById('logged-area');
+const dashboardSection = document.getElementById('dashboard-section');
 
-const secHome = document.getElementById('section-nav-home');
-const secHistory = document.getElementById('section-nav-history');
-const secSettings = document.getElementById('section-nav-settings');
-
-const navHome = document.getElementById('nav-home');
-const navHistory = document.getElementById('nav-history');
-const navSettings = document.getElementById('nav-settings');
-
-// =========================================================
-// GESTION DES ONGLETS INITIAUX (CONNEXION / INSCRIPTION)
-// =========================================================
+// ============================================================
+// ONGLETS
+// ============================================================
 const tabLogin = document.getElementById('tab-login');
 const tabRegister = document.getElementById('tab-register');
 
-tabLogin.addEventListener('click', () => {
-    tabLogin.className = "w-1/2 pb-3 font-bold text-esp-blue border-b-2 border-esp-blue text-center cursor-pointer";
-    tabRegister.className = "w-1/2 pb-3 font-medium text-gray-400 text-center hover:text-gray-600 cursor-pointer";
-    loginSection.classList.remove('hidden'); 
+function showLogin() {
+    tabLogin.className = "w-1/2 pb-3 font-bold text-esp-blue border-b-2 border-esp-blue text-center cursor-pointer transition";
+    tabRegister.className = "w-1/2 pb-3 font-medium text-gray-400 text-center cursor-pointer transition hover:text-gray-600";
+    loginSection.classList.remove('hidden');
     registerSection.classList.add('hidden');
-});
+    dashboardSection.classList.add('hidden');
+}
 
-tabRegister.addEventListener('click', () => {
-    tabRegister.className = "w-1/2 pb-3 font-bold text-esp-blue border-b-2 border-esp-blue text-center cursor-pointer";
-    tabLogin.className = "w-1/2 pb-3 font-medium text-gray-400 text-center hover:text-gray-600 cursor-pointer";
-    registerSection.classList.remove('hidden'); 
+function showRegister() {
+    tabRegister.className = "w-1/2 pb-3 font-bold text-esp-blue border-b-2 border-esp-blue text-center cursor-pointer transition";
+    tabLogin.className = "w-1/2 pb-3 font-medium text-gray-400 text-center cursor-pointer transition hover:text-gray-600";
+    registerSection.classList.remove('hidden');
     loginSection.classList.add('hidden');
+    dashboardSection.classList.add('hidden');
+}
+
+function showDashboard() {
+    tabsContainer.classList.add('hidden');
+    loginSection.classList.add('hidden');
+    registerSection.classList.add('hidden');
+    dashboardSection.classList.remove('hidden');
+}
+
+tabLogin.addEventListener('click', showLogin);
+tabRegister.addEventListener('click', showRegister);
+
+// ============================================================
+// DYNAMIQUE DES OPTIONS
+// ============================================================
+const regCycle = document.getElementById('reg-cycle');
+const regNiveau = document.getElementById('reg-niveau');
+const regOption = document.getElementById('reg-option');
+const labelDocument = document.getElementById('label-document');
+const helpDocument = document.getElementById('help-document');
+
+regCycle.addEventListener('change', () => {
+    const cycle = regCycle.value;
+    regNiveau.innerHTML = '<option value="">-- Choisir la classe --</option>';
+    regOption.innerHTML = '<option value="">Sélectionnez d\'abord le niveau</option>';
+    regOption.disabled = true;
+
+    if (cycle && structuresESP[cycle]) {
+        regNiveau.disabled = false;
+        structuresESP[cycle].niveaux.forEach(niv => {
+            const opt = document.createElement('option');
+            opt.value = niv;
+            opt.textContent = niv;
+            regNiveau.appendChild(opt);
+        });
+    } else {
+        regNiveau.disabled = true;
+    }
 });
 
-// =========================================================
-// GESTION MULTI-ONGLETS BAS DE PAGE (DASHBOARD)
-// =========================================================
-function SwitchNavTab(activeSection, activeBtn) {
-    [secHome, secHistory, secSettings].forEach(s => s.classList.add('hidden'));
-    [navHome, navHistory, navSettings].forEach(b => b.className = "flex flex-col items-center gap-1 font-medium text-gray-400 cursor-pointer");
-    
-    activeSection.classList.remove('hidden');
-    activeBtn.className = "flex flex-col items-center gap-1 font-bold text-esp-blue cursor-pointer";
-}
-navHome.addEventListener('click', () => SwitchNavTab(secHome, navHome));
-navHistory.addEventListener('click', () => SwitchNavTab(secHistory, navHistory));
-navSettings.addEventListener('click', () => SwitchNavTab(secSettings, navSettings));
+regNiveau.addEventListener('change', () => {
+    const cycle = regCycle.value;
+    const niveau = regNiveau.value;
+    regOption.innerHTML = '<option value="">-- Choisir l\'option --</option>';
 
-// =========================================================
-// SYSTÈME D'AFFICHAGE MASQUÉ / VISIBLE DU SOLDE
-// =========================================================
-const btnToggleEye = document.getElementById('btn-toggle-eye');
-const eyeIcon = document.getElementById('eye-icon');
-const soldeAffiche = document.getElementById('solde-affiche');
+    if (cycle && niveau && structuresESP[cycle].options[niveau]) {
+        regOption.disabled = false;
+        structuresESP[cycle].options[niveau].forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt;
+            option.textContent = opt;
+            regOption.appendChild(option);
+        });
+    } else {
+        regOption.disabled = true;
+    }
 
-if(btnToggleEye) {
-    btnToggleEye.addEventListener('click', () => {
-        soldeMasque = !soldeMasque;
-        if (soldeMasque) {
-            soldeAffiche.innerText = "••••••• FCFA";
-            eyeIcon.className = "fa-solid fa-eye-slash";
-        } else {
-            soldeAffiche.innerHTML = `${montantReelGlobal.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
-            eyeIcon.className = "fa-solid fa-eye";
-        }
-    });
-}
+    const estPremiereAnnee = (niveau === "DUT 1" || niveau === "Licence 1" || niveau === "DIC 1");
+    if (estPremiereAnnee) {
+        labelDocument.innerText = "Numéro de Carte d'Identité (CNI)";
+        helpDocument.innerText = "Utilisez votre CNI en attendant la délivrance de votre carte étudiant.";
+    } else {
+        labelDocument.innerText = "Numéro de Carte Étudiant";
+        helpDocument.innerText = "Champs requis pour la vérification administrative.";
+    }
+});
 
-// Toggle Mode Sombre manuellement
-const toggleDark = document.getElementById('toggle-dark-mode');
-if(toggleDark) {
-    toggleDark.addEventListener('change', () => {
-        document.getElementById('app-body').classList.toggle('dark-mode');
-    });
-}
-
-// =========================================================
-// FONCTIONS UTILES (TOAST & MODAL)
-// =========================================================
+// ============================================================
+// TOAST & MODAL
+// ============================================================
 function showToast(message, type = 'error') {
     const container = document.getElementById('toast-container');
+    
+    // Supprimer les toasts existants
+    container.innerHTML = '';
+    
     const toast = document.createElement('div');
-    const bgClass = type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900';
+    const bgClass = type === 'success' 
+        ? 'bg-emerald-50 border-emerald-200 text-emerald-900' 
+        : 'bg-rose-50 border-rose-200 text-rose-900';
+    const iconClass = type === 'success' 
+        ? 'fa-circle-check text-emerald-600' 
+        : 'fa-circle-exclamation text-rose-600';
+    
     toast.className = `flex items-center gap-3 p-4 rounded-xl border ${bgClass} shadow-lg text-sm font-medium`;
-    toast.innerHTML = `<div class="flex-grow">${message}</div>`;
+    toast.innerHTML = `<i class="fa-solid ${iconClass} text-lg"></i><div class="flex-grow">${message}</div>`;
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 4000);
 }
 
-function showCustomModal(title, message, type = 'success') {
+function showModal(title, message, type = 'success') {
     const modal = document.getElementById('custom-modal');
-    modal.classList.remove('hidden'); modal.classList.add('flex');
-    modal.classList.remove('opacity-0');
-    document.getElementById('modal-title').innerText = title;
-    document.getElementById('modal-message').innerText = message;
+    const iconContainer = document.getElementById('modal-icon');
     const btnClose = document.getElementById('modal-btn-close');
-    btnClose.className = "w-full bg-esp-blue py-2.5 rounded-xl text-sm text-white font-bold";
-    btnClose.onclick = () => { modal.classList.add('hidden'); };
+    
+    document.getElementById('modal-title').innerText = title;
+    document.getElementById('modal-message').innerHTML = message;
+    
+    if (type === 'success') {
+        iconContainer.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 bg-emerald-100 text-emerald-600 text-xl";
+        iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
+        btnClose.className = "w-full bg-esp-blue hover:bg-blue-800 py-2.5 rounded-xl text-sm font-bold text-white transition cursor-pointer";
+    } else {
+        iconContainer.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 bg-rose-100 text-rose-600 text-xl";
+        iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+        btnClose.className = "w-full bg-rose-600 hover:bg-rose-700 py-2.5 rounded-xl text-sm font-bold text-white transition cursor-pointer";
+    }
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('div').classList.remove('scale-95');
+    }, 10);
+    
+    btnClose.onclick = () => {
+        modal.classList.add('opacity-0');
+        modal.querySelector('div').classList.add('scale-95');
+        setTimeout(() => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }, 300);
+    };
 }
 
-// =========================================================
-// LOGIQUE DYNAMIQUE DES CLASSES ET OPTIONS (ESP)
-// =========================================================
-const regCycle = document.getElementById('reg-cycle');
-const regNiveau = document.getElementById('reg-niveau');
-const regOption = document.getElementById('reg-option');
-
-const regDocument = document.getElementById('reg-document');
-const regPhoto = document.getElementById('reg-photo');
-const labelDocument = document.getElementById('label-document');
-const labelPhoto = document.getElementById('label-photo');
-const helpDocument = document.getElementById('help-document');
-const btnRegister = document.getElementById('btn-register');
-
-const structuresESP = {
-    "DUT": { niveaux: ["DUT 1", "DUT 2"], options: { "DUT 1": ["Génie Logiciel (GL)", "Systèmes Réseaux Télécoms (SRT)"], "DUT 2": ["Génie Logiciel (GL)", "Systèmes Réseaux Télécoms (SRT)"] } },
-    "DIC": { niveaux: ["DIC 1", "DIC 2", "DIC 3"], options: { "DIC 1": ["Tronc Commun"], "DIC 2": ["Génie Logiciel (GL)", "Réseaux et Télécoms (RT)"], "DIC 3": ["Génie Logiciel (GL)", "Réseaux et Télécoms (RT)"] } },
-    "Licence Pro": { niveaux: ["Licence 1", "Licence 2", "Licence 3"], options: { "Licence 1": ["GLSI", "SRT"], "Licence 2": ["GLSI", "SRT"], "Licence 3": ["GLSI", "SRT"] } },
-    "Master": { niveaux: ["Master 1", "Master 2"], options: { "Master 1": ["Sécurité Informatique & Cloud", "Data Science / IA", "Génie Logiciel Avancé"], "Master 2": ["Cloud Security / DevSecOps", "Intelligence Artificielle", "Management des SI"] } }
-};
-
-if(regCycle) {
-    regCycle.addEventListener('change', () => {
-        const cycleSelectionne = regCycle.value;
-        regNiveau.innerHTML = '<option value="">-- Choisir la classe --</option>';
-        regOption.innerHTML = '<option value="">Sélectionnez d\'abord le niveau</option>';
-        regOption.disabled = true;
-
-        if (cycleSelectionne && structuresESP[cycleSelectionne]) {
-            regNiveau.disabled = false;
-            structuresESP[cycleSelectionne].niveaux.forEach(niv => {
-                const opt = document.createElement('option'); opt.value = niv; opt.textContent = niv; regNiveau.appendChild(opt);
-            });
-        } else { regNiveau.disabled = true; }
-    });
+// ============================================================
+// CHARGEMENT DU DASHBOARD
+// ============================================================
+function chargerDashboard(etudiant) {
+    document.getElementById('student-name').innerText = `${etudiant.prenom} ${etudiant.nom}`;
+    document.getElementById('student-info').innerText = `${etudiant.identifiant_type} : ${etudiant.identifiant_valeur}`;
+    document.getElementById('dashboard-cycle').innerText = etudiant.cycle;
+    document.getElementById('dashboard-niveau').innerText = etudiant.niveau;
+    document.getElementById('dashboard-option').innerText = etudiant.option;
+    document.getElementById('dashboard-identifiant').innerText = `${etudiant.identifiant_type} : ${etudiant.identifiant_valeur}`;
+    
+    const regimeCard = document.getElementById('regime-card');
+    const regimeText = document.getElementById('regime-text');
+    const regimeDesc = document.getElementById('regime-desc');
+    
+    if (etudiant.cycle === "DUT" || etudiant.cycle === "DIC") {
+        regimeCard.className = "rounded-2xl p-4 text-center bg-blue-50 border border-blue-200";
+        regimeText.className = "font-bold text-sm text-esp-blue";
+        regimeText.innerText = "🟢 Régime Public Exonéré";
+        regimeDesc.className = "text-xs mt-1 text-blue-700";
+        regimeDesc.innerText = "Vous n'avez pas de frais de scolarité à payer.";
+    } else {
+        regimeCard.className = "rounded-2xl p-4 text-center bg-amber-50 border border-amber-200";
+        regimeText.className = "font-bold text-sm text-amber-700";
+        regimeText.innerText = "🟡 Régime Privé Payant";
+        regimeDesc.className = "text-xs mt-1 text-amber-700";
+        regimeDesc.innerText = "Des frais de scolarité sont applicables.";
+    }
+    
+    showDashboard();
+    showToast(`👋 Bienvenue ${etudiant.prenom} !`, 'success');
 }
 
-if(regNiveau) {
-    regNiveau.addEventListener('change', () => {
-        const cycleSelectionne = regCycle.value;
-        const niveauSelectionne = regNiveau.value;
-        regOption.innerHTML = '<option value="">-- Choisir l\'option --</option>';
+// ============================================================
+// INSCRIPTION
+// ============================================================
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-        if (cycleSelectionne && niveauSelectionne && structuresESP[cycleSelectionne].options[niveauSelectionne]) {
-            regOption.disabled = false;
-            structuresESP[cycleSelectionne].options[niveauSelectionne].forEach(optText => {
-                const opt = document.createElement('option'); opt.value = optText; opt.textContent = optText; regOption.appendChild(opt);
-            });
-        } else { regOption.disabled = true; }
+    const prenom = document.getElementById('reg-prenom').value.trim();
+    const nom = document.getElementById('reg-nom').value.trim();
+    const cycle = regCycle.value;
+    const niveau = regNiveau.value;
+    const option = regOption.value;
+    const docValue = document.getElementById('reg-document').value.trim().toUpperCase();
+    const photo = document.getElementById('reg-photo').files[0];
+    const email = document.getElementById('reg-email').value.trim().toLowerCase();
+    const password = document.getElementById('reg-password').value;
+    const confirm = document.getElementById('reg-password-confirm').value;
 
-        if (niveauSelectionne === "DUT 1" || niveauSelectionne === "Licence 1" || niveauSelectionne === "DIC 1") {
-            labelDocument.innerText = "Numéro de Carte d'Identité (CNI)"; labelPhoto.innerText = "Photo de la CNI (Recto/Verso)"; regDocument.placeholder = "Ex: 1755XXXXXXXXX"; helpDocument.innerText = "Utilisez votre CNI en attendant la délivrance de votre carte étudiant.";
-        } else {
-            labelDocument.innerText = "Numéro de Carte Étudiant"; labelPhoto.innerText = "Photo de la Carte Étudiant"; regDocument.placeholder = "Ex: 2026ESP9999"; helpDocument.innerText = "Champs requis pour la vérification administrative.";
-        }
-    });
-}
-
-// =========================================================
-// INSCRIPTION SÉCURISÉE
-// =========================================================
-if(btnRegister) {
-    btnRegister.addEventListener('click', async () => {
-        const prenom = document.getElementById('reg-prenom').value.trim();
-        const nom = document.getElementById('reg-nom').value.trim();
-        const cycle = regCycle.value; const niveau = regNiveau.value; const option = regOption.value;
-        const docValue = regDocument.value.trim().toUpperCase(); const photoFichier = regPhoto.files[0];
-        const email = document.getElementById('reg-email').value.trim().toLowerCase();
-        const password = document.getElementById('reg-password').value; const passwordConfirm = document.getElementById('reg-password-confirm').value;
-
-        if (!prenom || !nom || !cycle || !niveau || !option || !docValue || !photoFichier || !email || !password) {
-            showToast("Veuillez remplir tous les champs.", "error"); return;
-        }
-        if (!email.endsWith('@esp.sn') && !email.endsWith('@ucad.edu.sn')) {
-            showToast("Seuls les e-mails @esp.sn et @ucad.edu.sn sont autorisés.", "error"); return;
-        }
-        if (password !== passwordConfirm) {
-            showToast("Les deux mots de passe ne correspondent pas.", "error"); return;
-        }
-
-        btnRegister.disabled = true; btnRegister.innerText = "Envoi en cours...";
-
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-            await sendEmailVerification(user);
-
-            const estPremiereAnnee = (niveau === "DUT 1" || niveau === "Licence 1" || niveau === "DIC 1");
-            const labelType = estPremiereAnnee ? "CNI" : "Carte_Etudiant";
-            const extension = photoFichier.name.split('.').pop();
-            const storageRef = ref(storage, `justificatifs/${user.uid}_${labelType}.${extension}`);
-            
-            const snapshot = await uploadBytes(storageRef, photoFichier);
-            const downloadURL = await getDownloadURL(snapshot.ref);
-
-            await setDoc(doc(db, "etudiants", user.uid), {
-                prenom: prenom, nom: nom, cycle: cycle, niveau: niveau, option: option, email: email,
-                montant_deja_paye: 0, identifiant_type: estPremiereAnnee ? "CNI" : "Carte Étudiant",
-                identifiant_valeur: docValue, identifiant_url_photo: downloadURL, transactions: []
-            });
-
-            showCustomModal("Validation requise", `Un mail de confirmation a été envoyé à : ${email}`, "success");
-            tabLogin.click();
-        } catch (error) { showToast(error.message, "error"); } finally {
-            btnRegister.disabled = false; btnRegister.innerText = "Créer mon compte";
-        }
-    });
-}
-
-// =========================================================
-// CONNEXION & DASHBOARD & PAIEMENT
-// =========================================================
-function genererHistoriqueVue(transactions) {
-    const container = document.getElementById('transactions-list');
-    if(!transactions || transactions.length === 0) {
-        container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Aucune transaction effectuée.</p>`;
+    if (!prenom || !nom || !cycle || !niveau || !option || !docValue || !photo || !email || !password) {
+        showToast("Veuillez remplir tous les champs.", "error");
         return;
     }
-    container.innerHTML = "";
-    transactions.reverse().forEach(t => {
-        const item = document.createElement('div');
-        item.className = "flex justify-between items-center p-3 bg-gray-50 border border-gray-100 rounded-xl text-xs";
-        item.innerHTML = `
-            <div class="flex items-center gap-3">
-                <div class="h-8 w-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                    <i class="fa-solid fa-arrow-down"></i>
-                </div>
-                <div>
-                    <p class="font-bold text-gray-900">Scolarité via ${t.operateur.toUpperCase()}</p>
-                    <p class="text-[10px] text-gray-400">${t.date}</p>
-                </div>
-            </div>
-            <div class="text-right">
-                <p class="font-black text-emerald-700">+ ${t.montant.toLocaleString()} F</p>
-                <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">Réussi</span>
-            </div>
-        `;
-        container.appendChild(item);
-    });
-}
 
-function chargerDashboardEtudiant(data) {
-    montantReelGlobal = data.montant_deja_paye || 0;
-    document.getElementById('student-name').innerText = `${data.prenom} ${data.nom}`;
-    document.getElementById('student-info').innerText = `${data.identifiant_type} : ${data.identifiant_valeur} | ${data.niveau} (${data.option})`;
-    
-    tabsContainer.classList.add('hidden'); loginSection.classList.add('hidden'); loggedArea.classList.remove('hidden');
-
-    const formPaiementBox = document.getElementById('form-paiement-box');
-    const carteSolde = document.querySelector('#section-nav-home .bg-emerald-50');
-
-    if (data.cycle === "DUT" || data.cycle === "DIC") {
-        carteSolde.classList.add('hidden'); formPaiementBox.classList.add('hidden');
-        let msg = document.getElementById('msg-public-scolarite');
-        if (!msg) {
-            msg = document.createElement('div'); msg.id = 'msg-public-scolarite';
-            msg.className = "bg-blue-50 border border-blue-200 rounded-2xl p-5 text-center space-y-2";
-            msg.innerHTML = `<h4 class="font-bold text-esp-blue text-sm">Régime Public Exonéré</h4><p class="text-gray-500 text-xs">Aucun frais de scolarité requis.</p>`;
-            document.getElementById('section-nav-home').appendChild(msg);
-        }
-    } else {
-        carteSolde.classList.remove('hidden'); formPaiementBox.classList.remove('hidden');
-        if (!soldeMasque) soldeAffiche.innerHTML = `${montantReelGlobal.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
-        genererHistoriqueVue(data.transactions || []);
+    if (!email.endsWith('@esp.sn') && !email.endsWith('@ucad.edu.sn')) {
+        showToast("Seuls les e-mails @esp.sn et @ucad.edu.sn sont autorisés.", "error");
+        return;
     }
-}
 
-const btnLogin = document.getElementById('btn-login');
-if(btnLogin) {
-    btnLogin.addEventListener('click', async () => {
-        const email = document.getElementById('login-email').value.trim().toLowerCase();
-        const password = document.getElementById('login-password').value;
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-            if (!user.emailVerified) { showToast("Veuillez vérifier votre boîte e-mail.", "error"); await signOut(auth); return; }
-            const docSnap = await getDoc(doc(db, "etudiants", user.uid));
-            if (docSnap.exists()) chargerDashboardEtudiant(docSnap.data());
-        } catch (error) { showToast("Identifiants de connexion invalides.", "error"); }
-    });
-}
+    if (password !== confirm) {
+        showToast("Les mots de passe ne correspondent pas.", "error");
+        return;
+    }
 
-const btnPayer = document.getElementById('btn-payer');
-if(btnPayer) {
-    btnPayer.addEventListener('click', async () => {
-        const montant = parseInt(document.getElementById('amount-input').value);
-        const op = document.querySelector('input[name="operator"]:checked');
-        if (!montant || montant < 5000 || !op) { showToast("Sélectionnez un opérateur et un montant valide (min 5000).", "error"); return; }
+    if (password.length < 6) {
+        showToast("Le mot de passe doit contenir au moins 6 caractères.", "error");
+        return;
+    }
 
-        try {
-            const refDoc = doc(db, "etudiants", auth.currentUser.uid);
-            const nouvelleTransaction = { montant: montant, operateur: op.value, date: new Date().toLocaleString('fr-FR'), id_transaction: "TXN-" + Math.floor(Math.random() * 1000000) };
-            montantReelGlobal += montant;
-            await updateDoc(refDoc, { montant_deja_paye: montantReelGlobal, transactions: arrayUnion(nouvelleTransaction) });
+    const btn = document.getElementById('btn-register');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Inscription...';
 
-            if(!soldeMasque) soldeAffiche.innerHTML = `${montantReelGlobal.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
-            
-            const snap = await getDoc(refDoc);
-            if(snap.exists()) genererHistoriqueVue(snap.data().transactions || []);
-
-            showCustomModal("Paiement Réussi", `Votre versement de ${montant.toLocaleString()} FCFA via ${op.value.toUpperCase()} a été enregistré.`, "success");
-            document.getElementById('amount-input').value = "";
-        } catch (e) { showToast("Erreur lors de la transaction.", "error"); }
-    });
-}
-
-const btnLogout = document.getElementById('btn-logout');
-if(btnLogout) {
-    btnLogout.addEventListener('click', async () => { await signOut(auth); location.reload(); });
-}
-
-document.getElementById('btn-update-pwd')?.addEventListener('click', async () => {
-    const newPwd = document.getElementById('settings-new-password').value;
-    if (!newPwd || newPwd.length < 6) { showToast("Le mot de passe doit faire au moins 6 caractères.", "error"); return; }
     try {
-        await updatePassword(auth.currentUser, newPwd);
-        showCustomModal("Succès", "Votre mot de passe a bien été mis à jour.", "success");
-        document.getElementById('settings-new-password').value = "";
-    } catch (e) { showToast("Erreur. Veuillez vous reconnecter avant de modifier.", "error"); }
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        await sendEmailVerification(user);
+
+        const estPremiereAnnee = (niveau === "DUT 1" || niveau === "Licence 1" || niveau === "DIC 1");
+        const etudiantData = {
+            prenom, nom, cycle, niveau, option, email,
+            identifiant_type: estPremiereAnnee ? "CNI" : "Carte Étudiant",
+            identifiant_valeur: docValue,
+            photo_url: photo ? URL.createObjectURL(photo) : "",
+            date_inscription: new Date().toISOString()
+        };
+
+        localStorage.setItem('esp_pay_user', JSON.stringify(etudiantData));
+
+        // ✅ UNIQUEMENT LA MODAL - PAS DE TOAST
+        showModal(
+            "📧 Vérification email requise",
+            `Un email de confirmation a été envoyé à :<br><strong>${email}</strong><br><br>
+            📬 Vérifiez votre boîte de réception (et vos spams).<br><br>
+            🔐 Une fois votre email confirmé, vous pourrez vous connecter.`,
+            "success"
+        );
+
+        // Réinitialiser le formulaire
+        document.getElementById('reg-prenom').value = "";
+        document.getElementById('reg-nom').value = "";
+        document.getElementById('reg-email').value = "";
+        document.getElementById('reg-password').value = "";
+        document.getElementById('reg-password-confirm').value = "";
+        document.getElementById('reg-document').value = "";
+        document.getElementById('reg-photo').value = "";
+        regCycle.value = "";
+        regNiveau.innerHTML = '<option value="">Sélectionnez d\'abord le cycle</option>';
+        regNiveau.disabled = true;
+        regOption.innerHTML = '<option value="">Sélectionnez d\'abord la classe</option>';
+        regOption.disabled = true;
+
+        // Rediriger vers Connexion
+        showLogin();
+
+    } catch (error) {
+        console.error("❌ Erreur:", error);
+        if (error.code === 'auth/email-already-in-use') {
+            showToast("❌ Cet email est déjà utilisé.", "error");
+        } else {
+            showToast("❌ Erreur: " + error.message, "error");
+        }
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-lock"></i> Créer mon compte';
+    }
 });
+
+// ============================================================
+// CONNEXION
+// ============================================================
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('login-email').value.trim().toLowerCase();
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) {
+        showToast("Veuillez remplir tous les champs.", "error");
+        return;
+    }
+
+    const btn = document.getElementById('btn-login');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Connexion...';
+
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        if (!user.emailVerified) {
+            // ✅ UNIQUEMENT LA MODAL
+            showModal(
+                "📧 Email non vérifié",
+                `Veuillez vérifier votre boîte mail :<br><strong>${email}</strong><br><br>
+                📬 Un email de confirmation a été envoyé.<br><br>
+                🔄 Après vérification, reconnectez-vous.`,
+                "error"
+            );
+            await signOut(auth);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Se connecter';
+            return;
+        }
+
+        const etudiantStr = localStorage.getItem('esp_pay_user');
+        if (etudiantStr) {
+            const etudiant = JSON.parse(etudiantStr);
+            if (etudiant.email === email) {
+                chargerDashboard(etudiant);
+            } else {
+                showToast("❌ Données incorrectes. Réinscrivez-vous.", "error");
+                await signOut(auth);
+            }
+        } else {
+            showToast("❌ Aucun profil trouvé. Inscrivez-vous.", "error");
+            await signOut(auth);
+        }
+
+    } catch (error) {
+        console.error("❌ Erreur:", error);
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+            showToast("❌ Email ou mot de passe incorrect.", "error");
+        } else {
+            showToast("❌ Erreur: " + error.message, "error");
+        }
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Se connecter';
+    }
+});
+
+// ============================================================
+// DÉCONNEXION
+// ============================================================
+document.getElementById('btn-logout').addEventListener('click', async () => {
+    try {
+        await signOut(auth);
+        showLogin();
+        showToast("✅ Déconnecté.", "success");
+    } catch (error) {
+        showToast("❌ Erreur déconnexion.", "error");
+    }
+});
+
+// ============================================================
+// SURVEILLANCE AUTH (PASSIVE - SANS AUCUNE ALERTE)
+// ============================================================
+onAuthStateChanged(auth, (user) => {
+    console.log("🔄 Auth:", user ? `Connecté: ${user.email}` : "Déconnecté");
+    
+    if (user) {
+        const etudiantStr = localStorage.getItem('esp_pay_user');
+        if (etudiantStr) {
+            const etudiant = JSON.parse(etudiantStr);
+            if (etudiant.email === user.email && user.emailVerified) {
+                chargerDashboard(etudiant);
+                return;
+            }
+        }
+        // ✅ AUCUN TOAST ICI - on laisse les formulaires gérer
+        showLogin();
+    } else {
+        showLogin();
+    }
+});
+
+console.log("🚀 ESP Pay - Version sans toast en double");
