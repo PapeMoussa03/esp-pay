@@ -1,11 +1,12 @@
-/* Couleurs ESP */
+/* Couleurs officielles de l'ESP */
 .bg-esp-blue { background-color: #004b93; }
 .text-esp-blue { color: #004b93; }
 .border-esp-blue { border-color: #004b93; }
 .bg-esp-green { background-color: #55b748; }
 .text-esp-green { color: #55b748; }
+.border-esp-green { border-color: #55b748; }
 
-/* Scroll personnalisé */
+/* Scroll personnalisé pour l'historique */
 #transactions-list::-webkit-scrollbar {
     width: 4px;
 }
@@ -17,12 +18,17 @@
     background: #004b93;
     border-radius: 8px;
 }
+#transactions-list::-webkit-scrollbar-thumb:hover {
+    background: #003366;
+}
 
-/* Dark Mode */
+/* ====== DARK MODE ====== */
 .dark-mode {
     background-color: #0f172a !important;
     color: #f8fafc !important;
 }
+
+/* Cartes */
 .dark-mode .bg-white {
     background-color: #1e293b !important;
     color: #f1f5f9 !important;
@@ -32,6 +38,8 @@
 .dark-mode .bg-gray-100 {
     background-color: #334155 !important;
 }
+
+/* Textes */
 .dark-mode .text-gray-950,
 .dark-mode .text-gray-900,
 .dark-mode .text-gray-800 {
@@ -41,29 +49,147 @@
 .dark-mode .text-gray-400 {
     color: #94a3b8 !important;
 }
+.dark-mode .text-esp-blue {
+    color: #60a5fa !important;
+}
+
+/* Bordures */
 .dark-mode .border-gray-100,
 .dark-mode .border-gray-200,
 .dark-mode .border-gray-300 {
     border-color: #334155 !important;
 }
+
+/* Solde */
 .dark-mode .bg-emerald-50 {
     background-color: #064e3b !important;
 }
 .dark-mode .text-emerald-950 {
     color: #a7f3d0 !important;
 }
+.dark-mode .text-emerald-800 {
+    color: #6ee7b7 !important;
+}
+.dark-mode .border-emerald-100 {
+    border-color: #065f46 !important;
+}
+
+/* Message Public Exonéré */
 .dark-mode .bg-blue-50 {
     background-color: #172554 !important;
 }
+.dark-mode .border-blue-200 {
+    border-color: #1e3a5f !important;
+}
+.dark-mode .text-esp-blue {
+    color: #60a5fa !important;
+}
+
+/* Formulaires */
 .dark-mode input,
-.dark-mode select {
+.dark-mode select,
+.dark-mode textarea {
     background-color: #1e293b !important;
     color: #f1f5f9 !important;
     border-color: #475569 !important;
 }
-.dark-mode input::placeholder {
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder {
     color: #94a3b8 !important;
 }
+.dark-mode input:focus,
+.dark-mode select:focus,
+.dark-mode textarea:focus {
+    border-color: #60a5fa !important;
+    ring-color: #60a5fa !important;
+}
+
+/* Radio buttons */
+.dark-mode input[type="radio"] {
+    accent-color: #60a5fa;
+}
+
+/* Modal */
 .dark-mode #custom-modal .bg-white {
     background-color: #1e293b !important;
+    border-color: #334155 !important;
+}
+.dark-mode #custom-modal .text-gray-950 {
+    color: #f8fafc !important;
+}
+.dark-mode #custom-modal .text-gray-500 {
+    color: #94a3b8 !important;
+}
+
+/* Boutons */
+.dark-mode .bg-rose-50 {
+    background-color: #4c0519 !important;
+}
+.dark-mode .text-rose-600 {
+    color: #fb7185 !important;
+}
+.dark-mode .border-rose-200 {
+    border-color: #7f1d2e !important;
+}
+.dark-mode .bg-emerald-600 {
+    background-color: #047857 !important;
+}
+.dark-mode .bg-emerald-600:hover {
+    background-color: #065f46 !important;
+}
+
+/* Aide (FAQ) */
+.dark-mode details summary {
+    color: #e2e8f0 !important;
+}
+.dark-mode details summary:hover {
+    color: #60a5fa !important;
+}
+.dark-mode details p {
+    color: #94a3b8 !important;
+}
+.dark-mode .bg-gray-50 {
+    background-color: #1e293b !important;
+}
+
+/* Toast */
+.dark-mode .bg-emerald-50 {
+    background-color: #064e3b !important;
+    border-color: #065f46 !important;
+    color: #a7f3d0 !important;
+}
+.dark-mode .bg-rose-50 {
+    background-color: #4c0519 !important;
+    border-color: #7f1d2e !important;
+    color: #fecdd3 !important;
+}
+.dark-mode .text-emerald-600 {
+    color: #6ee7b7 !important;
+}
+.dark-mode .text-rose-600 {
+    color: #fb7185 !important;
+}
+
+/* Footer */
+.dark-mode .bg-gray-900 {
+    background-color: #0f172a !important;
+}
+.dark-mode .text-gray-400 {
+    color: #94a3b8 !important;
+}
+.dark-mode .border-esp-green {
+    border-color: #065f46 !important;
+}
+
+/* Badge */
+.dark-mode .bg-emerald-100 {
+    background-color: #064e3b !important;
+}
+.dark-mode .text-emerald-700 {
+    color: #6ee7b7 !important;
+}
+
+/* Header */
+.dark-mode .bg-esp-blue {
+    background-color: #1e3a5f !important;
 }

@@ -5,7 +5,10 @@ import {
     signInWithEmailAndPassword,
     sendEmailVerification, 
     signOut,
-    onAuthStateChanged
+    updatePassword,
+    onAuthStateChanged,
+    reauthenticateWithCredential,
+    EmailAuthProvider
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 // ============================================================
@@ -67,6 +70,14 @@ const loginSection = document.getElementById('login-section');
 const registerSection = document.getElementById('register-section');
 const dashboardSection = document.getElementById('dashboard-section');
 
+const sectionHome = document.getElementById('section-home');
+const sectionHistory = document.getElementById('section-history');
+const sectionSettings = document.getElementById('section-settings');
+
+const navHome = document.getElementById('nav-home');
+const navHistory = document.getElementById('nav-history');
+const navSettings = document.getElementById('nav-settings');
+
 // ============================================================
 // ONGLETS
 // ============================================================
@@ -98,6 +109,22 @@ function showDashboard() {
 
 tabLogin.addEventListener('click', showLogin);
 tabRegister.addEventListener('click', showRegister);
+
+// ============================================================
+// NAVIGATION DASHBOARD (3 onglets)
+// ============================================================
+function switchTab(activeSection, activeBtn) {
+    [sectionHome, sectionHistory, sectionSettings].forEach(s => s.classList.add('hidden'));
+    [navHome, navHistory, navSettings].forEach(b => {
+        b.className = "flex flex-col items-center gap-1 font-medium text-gray-400 cursor-pointer hover:text-gray-600";
+    });
+    activeSection.classList.remove('hidden');
+    activeBtn.className = "flex flex-col items-center gap-1 font-bold text-esp-blue cursor-pointer";
+}
+
+navHome.addEventListener('click', () => switchTab(sectionHome, navHome));
+navHistory.addEventListener('click', () => switchTab(sectionHistory, navHistory));
+navSettings.addEventListener('click', () => switchTab(sectionSettings, navSettings));
 
 // ============================================================
 // DYNAMIQUE DES OPTIONS
@@ -159,10 +186,7 @@ regNiveau.addEventListener('change', () => {
 // ============================================================
 function showToast(message, type = 'error') {
     const container = document.getElementById('toast-container');
-    
-    // Supprimer les toasts existants
     container.innerHTML = '';
-    
     const toast = document.createElement('div');
     const bgClass = type === 'success' 
         ? 'bg-emerald-50 border-emerald-200 text-emerald-900' 
@@ -213,37 +237,108 @@ function showModal(title, message, type = 'success') {
 }
 
 // ============================================================
+// VARIABLES GLOBALES
+// ============================================================
+let montantReelGlobal = 0;
+let soldeMasque = false;
+
+// ============================================================
+// HISTORIQUE
+// ============================================================
+function genererHistorique(transactions) {
+    const container = document.getElementById('transactions-list');
+    if (!transactions || transactions.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <i class="fa-solid fa-receipt text-gray-300 text-4xl mb-3"></i>
+                <p class="text-xs text-gray-400">Aucune transaction effectuée.</p>
+            </div>
+        `;
+        return;
+    }
+    container.innerHTML = "";
+    [...transactions].reverse().forEach(t => {
+        const item = document.createElement('div');
+        item.className = "flex justify-between items-center p-3 bg-gray-50 border border-gray-100 rounded-xl text-xs";
+        item.innerHTML = `
+            <div class="flex items-center gap-3">
+                <div class="h-8 w-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-arrow-down"></i>
+                </div>
+                <div>
+                    <p class="font-bold text-gray-900">Scolarité via ${t.operateur}</p>
+                    <p class="text-[10px] text-gray-400">${t.date}</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="font-black text-emerald-700">+ ${t.montant.toLocaleString()} F</p>
+                <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">Réussi</span>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+// ============================================================
 // CHARGEMENT DU DASHBOARD
 // ============================================================
 function chargerDashboard(etudiant) {
+    montantReelGlobal = etudiant.montant_deja_paye || 0;
+    
     document.getElementById('student-name').innerText = `${etudiant.prenom} ${etudiant.nom}`;
     document.getElementById('student-info').innerText = `${etudiant.identifiant_type} : ${etudiant.identifiant_valeur}`;
-    document.getElementById('dashboard-cycle').innerText = etudiant.cycle;
-    document.getElementById('dashboard-niveau').innerText = etudiant.niveau;
-    document.getElementById('dashboard-option').innerText = etudiant.option;
-    document.getElementById('dashboard-identifiant').innerText = `${etudiant.identifiant_type} : ${etudiant.identifiant_valeur}`;
     
-    const regimeCard = document.getElementById('regime-card');
-    const regimeText = document.getElementById('regime-text');
-    const regimeDesc = document.getElementById('regime-desc');
-    
+    const soldeCard = document.getElementById('solde-card');
+    const formPaiement = document.getElementById('form-paiement-box');
+    const msgPublic = document.getElementById('msg-public-scolarite');
+
     if (etudiant.cycle === "DUT" || etudiant.cycle === "DIC") {
-        regimeCard.className = "rounded-2xl p-4 text-center bg-blue-50 border border-blue-200";
-        regimeText.className = "font-bold text-sm text-esp-blue";
-        regimeText.innerText = "🟢 Régime Public Exonéré";
-        regimeDesc.className = "text-xs mt-1 text-blue-700";
-        regimeDesc.innerText = "Vous n'avez pas de frais de scolarité à payer.";
+        soldeCard.classList.add('hidden');
+        formPaiement.classList.add('hidden');
+        msgPublic.classList.remove('hidden');
     } else {
-        regimeCard.className = "rounded-2xl p-4 text-center bg-amber-50 border border-amber-200";
-        regimeText.className = "font-bold text-sm text-amber-700";
-        regimeText.innerText = "🟡 Régime Privé Payant";
-        regimeDesc.className = "text-xs mt-1 text-amber-700";
-        regimeDesc.innerText = "Des frais de scolarité sont applicables.";
+        soldeCard.classList.remove('hidden');
+        formPaiement.classList.remove('hidden');
+        msgPublic.classList.add('hidden');
+        if (!soldeMasque) {
+            document.getElementById('solde-affiche').innerHTML = `${montantReelGlobal.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
+        }
+        genererHistorique(etudiant.transactions || []);
     }
     
     showDashboard();
     showToast(`👋 Bienvenue ${etudiant.prenom} !`, 'success');
 }
+
+// ============================================================
+// THÈME (Clair / Sombre)
+// ============================================================
+const themeLight = document.getElementById('theme-light');
+const themeDark = document.getElementById('theme-dark');
+
+// Restaurer le thème sauvegardé
+if (localStorage.getItem('esp_pay_theme') === 'dark') {
+    document.getElementById('app-body').classList.add('dark-mode');
+    themeDark.className = "flex-1 py-2 px-4 rounded-xl border-2 border-esp-blue bg-esp-blue text-white text-sm font-bold transition cursor-pointer";
+    themeLight.className = "flex-1 py-2 px-4 rounded-xl border-2 border-gray-300 bg-white text-gray-700 text-sm font-medium transition cursor-pointer hover:border-gray-400";
+} else {
+    themeLight.className = "flex-1 py-2 px-4 rounded-xl border-2 border-esp-blue bg-esp-blue text-white text-sm font-bold transition cursor-pointer";
+    themeDark.className = "flex-1 py-2 px-4 rounded-xl border-2 border-gray-300 bg-white text-gray-700 text-sm font-medium transition cursor-pointer hover:border-gray-400";
+}
+
+themeLight.addEventListener('click', () => {
+    document.getElementById('app-body').classList.remove('dark-mode');
+    localStorage.setItem('esp_pay_theme', 'light');
+    themeLight.className = "flex-1 py-2 px-4 rounded-xl border-2 border-esp-blue bg-esp-blue text-white text-sm font-bold transition cursor-pointer";
+    themeDark.className = "flex-1 py-2 px-4 rounded-xl border-2 border-gray-300 bg-white text-gray-700 text-sm font-medium transition cursor-pointer hover:border-gray-400";
+});
+
+themeDark.addEventListener('click', () => {
+    document.getElementById('app-body').classList.add('dark-mode');
+    localStorage.setItem('esp_pay_theme', 'dark');
+    themeDark.className = "flex-1 py-2 px-4 rounded-xl border-2 border-esp-blue bg-esp-blue text-white text-sm font-bold transition cursor-pointer";
+    themeLight.className = "flex-1 py-2 px-4 rounded-xl border-2 border-gray-300 bg-white text-gray-700 text-sm font-medium transition cursor-pointer hover:border-gray-400";
+});
 
 // ============================================================
 // INSCRIPTION
@@ -297,12 +392,13 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
             identifiant_type: estPremiereAnnee ? "CNI" : "Carte Étudiant",
             identifiant_valeur: docValue,
             photo_url: photo ? URL.createObjectURL(photo) : "",
-            date_inscription: new Date().toISOString()
+            date_inscription: new Date().toISOString(),
+            montant_deja_paye: 0,
+            transactions: []
         };
 
         localStorage.setItem('esp_pay_user', JSON.stringify(etudiantData));
 
-        // ✅ UNIQUEMENT LA MODAL - PAS DE TOAST
         showModal(
             "📧 Vérification email requise",
             `Un email de confirmation a été envoyé à :<br><strong>${email}</strong><br><br>
@@ -311,7 +407,6 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
             "success"
         );
 
-        // Réinitialiser le formulaire
         document.getElementById('reg-prenom').value = "";
         document.getElementById('reg-nom').value = "";
         document.getElementById('reg-email').value = "";
@@ -325,7 +420,6 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         regOption.innerHTML = '<option value="">Sélectionnez d\'abord la classe</option>';
         regOption.disabled = true;
 
-        // Rediriger vers Connexion
         showLogin();
 
     } catch (error) {
@@ -364,7 +458,6 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         const user = userCredential.user;
 
         if (!user.emailVerified) {
-            // ✅ UNIQUEMENT LA MODAL
             showModal(
                 "📧 Email non vérifié",
                 `Veuillez vérifier votre boîte mail :<br><strong>${email}</strong><br><br>
@@ -406,6 +499,237 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 });
 
 // ============================================================
+// PAIEMENT (SIMULÉ)
+// ============================================================
+document.getElementById('btn-payer').addEventListener('click', async () => {
+    const montant = parseInt(document.getElementById('amount-input').value);
+    const operator = document.querySelector('input[name="operator"]:checked');
+
+    if (!montant || montant < 5000) {
+        showToast("Le montant minimum est de 5 000 FCFA.", "error");
+        return;
+    }
+    if (!operator) {
+        showToast("Sélectionnez un opérateur.", "error");
+        return;
+    }
+
+    const btn = document.getElementById('btn-payer');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Traitement...';
+
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            showToast("Veuillez vous reconnecter.", "error");
+            return;
+        }
+
+        const etudiantStr = localStorage.getItem('esp_pay_user');
+        if (!etudiantStr) {
+            showToast("Profil introuvable.", "error");
+            return;
+        }
+
+        const etudiant = JSON.parse(etudiantStr);
+        const transaction = {
+            montant: montant,
+            operateur: operator.value,
+            date: new Date().toLocaleString('fr-FR'),
+            id_transaction: "TXN-" + Date.now().toString().slice(-6)
+        };
+
+        etudiant.montant_deja_paye = (etudiant.montant_deja_paye || 0) + montant;
+        etudiant.transactions = etudiant.transactions || [];
+        etudiant.transactions.push(transaction);
+
+        localStorage.setItem('esp_pay_user', JSON.stringify(etudiant));
+
+        montantReelGlobal = etudiant.montant_deja_paye;
+        if (!soldeMasque) {
+            document.getElementById('solde-affiche').innerHTML = `${montantReelGlobal.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
+        }
+        genererHistorique(etudiant.transactions);
+
+        showModal(
+            "✅ Paiement Réussi",
+            `Votre versement de ${montant.toLocaleString()} FCFA via ${operator.value} a été enregistré.`,
+            "success"
+        );
+        document.getElementById('amount-input').value = "";
+
+    } catch (error) {
+        console.error("❌ Erreur:", error);
+        showToast("Erreur lors du paiement.", "error");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-credit-card"></i> Procéder au paiement';
+    }
+});
+
+// ============================================================
+// MODIFICATION DU MOT DE PASSE (2 ÉTAPES)
+// ============================================================
+const stepCurrentPassword = document.getElementById('step-current-password');
+const stepNewPassword = document.getElementById('step-new-password');
+const currentPasswordInput = document.getElementById('settings-current-password');
+const newPasswordInput = document.getElementById('settings-new-password');
+const confirmPasswordInput = document.getElementById('settings-confirm-password');
+const btnVerify = document.getElementById('btn-verify-password');
+const btnUpdate = document.getElementById('btn-update-pwd');
+
+// Étape 1 : Vérifier le mot de passe actuel
+btnVerify.addEventListener('click', async () => {
+    const currentPwd = currentPasswordInput.value;
+
+    if (!currentPwd) {
+        showToast("Veuillez saisir votre mot de passe actuel.", "error");
+        return;
+    }
+
+    if (currentPwd.length < 6) {
+        showToast("Le mot de passe doit contenir au moins 6 caractères.", "error");
+        return;
+    }
+
+    btnVerify.disabled = true;
+    btnVerify.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Vérification...';
+
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            showToast("Veuillez vous reconnecter.", "error");
+            return;
+        }
+
+        const credential = EmailAuthProvider.credential(user.email, currentPwd);
+        await reauthenticateWithCredential(user, credential);
+
+        // Mot de passe correct : passer à l'étape 2
+        stepCurrentPassword.classList.add('hidden');
+        stepNewPassword.classList.remove('hidden');
+        currentPasswordInput.value = "";
+        showToast("✅ Mot de passe vérifié, vous pouvez maintenant le modifier.", "success");
+
+    } catch (error) {
+        console.error("❌ Erreur:", error);
+        if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+            showToast("❌ Mot de passe actuel incorrect.", "error");
+        } else {
+            showToast("❌ Erreur: " + error.message, "error");
+        }
+    } finally {
+        btnVerify.disabled = false;
+        btnVerify.innerHTML = '<i class="fa-solid fa-check mr-2"></i>Vérifier';
+    }
+});
+
+// Étape 2 : Mettre à jour le mot de passe
+btnUpdate.addEventListener('click', async () => {
+    const newPwd = newPasswordInput.value;
+    const confirmPwd = confirmPasswordInput.value;
+
+    if (!newPwd || !confirmPwd) {
+        showToast("Veuillez remplir tous les champs.", "error");
+        return;
+    }
+
+    if (newPwd.length < 6) {
+        showToast("Le mot de passe doit contenir au moins 6 caractères.", "error");
+        return;
+    }
+
+    if (newPwd !== confirmPwd) {
+        showToast("❌ Les mots de passe ne correspondent pas.", "error");
+        newPasswordInput.value = "";
+        confirmPasswordInput.value = "";
+        newPasswordInput.focus();
+        return;
+    }
+
+    btnUpdate.disabled = true;
+    btnUpdate.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Mise à jour...';
+
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            showToast("Veuillez vous reconnecter.", "error");
+            return;
+        }
+
+        await updatePassword(user, newPwd);
+
+        showModal("✅ Succès", "Votre mot de passe a bien été mis à jour.", "success");
+
+        // Réinitialiser et revenir à l'étape 1
+        newPasswordInput.value = "";
+        confirmPasswordInput.value = "";
+        stepNewPassword.classList.add('hidden');
+        stepCurrentPassword.classList.remove('hidden');
+
+    } catch (error) {
+        console.error("❌ Erreur:", error);
+        if (error.code === 'auth/requires-recent-login') {
+            showToast("Veuillez vous reconnecter avant de modifier le mot de passe.", "error");
+            newPasswordInput.value = "";
+            confirmPasswordInput.value = "";
+            stepNewPassword.classList.add('hidden');
+            stepCurrentPassword.classList.remove('hidden');
+        } else {
+            showToast("Erreur: " + error.message, "error");
+        }
+    } finally {
+        btnUpdate.disabled = false;
+        btnUpdate.innerHTML = '<i class="fa-solid fa-rotate mr-2"></i>Mettre à jour';
+    }
+});
+
+// ============================================================
+// FEEDBACK (stockage local)
+// ============================================================
+document.getElementById('feedback-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const nom = document.getElementById('feedback-nom').value.trim();
+    const email = document.getElementById('feedback-email').value.trim();
+    const message = document.getElementById('feedback-message').value.trim();
+    
+    if (!nom || !email || !message) {
+        showToast("Veuillez remplir tous les champs.", "error");
+        return;
+    }
+    
+    const feedbacks = JSON.parse(localStorage.getItem('esp_pay_feedbacks') || '[]');
+    feedbacks.push({
+        nom, email, message,
+        date: new Date().toLocaleString('fr-FR')
+    });
+    localStorage.setItem('esp_pay_feedbacks', JSON.stringify(feedbacks));
+    
+    showModal("✅ Merci !", "Votre message a bien été envoyé. Nous vous répondrons dans les plus brefs délais.", "success");
+    
+    document.getElementById('feedback-nom').value = "";
+    document.getElementById('feedback-email').value = "";
+    document.getElementById('feedback-message').value = "";
+});
+
+// ============================================================
+// AFFICHAGE / MASQUAGE DU SOLDE
+// ============================================================
+document.getElementById('btn-toggle-eye').addEventListener('click', () => {
+    soldeMasque = !soldeMasque;
+    const solde = document.getElementById('solde-affiche');
+    const icon = document.getElementById('eye-icon');
+    if (soldeMasque) {
+        solde.innerHTML = "••••••• <span class='text-sm font-bold'>FCFA</span>";
+        icon.className = "fa-solid fa-eye-slash";
+    } else {
+        solde.innerHTML = `${montantReelGlobal.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
+        icon.className = "fa-solid fa-eye";
+    }
+});
+
+// ============================================================
 // DÉCONNEXION
 // ============================================================
 document.getElementById('btn-logout').addEventListener('click', async () => {
@@ -419,7 +743,7 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
 });
 
 // ============================================================
-// SURVEILLANCE AUTH (PASSIVE - SANS AUCUNE ALERTE)
+// SURVEILLANCE AUTH (PASSIVE)
 // ============================================================
 onAuthStateChanged(auth, (user) => {
     console.log("🔄 Auth:", user ? `Connecté: ${user.email}` : "Déconnecté");
@@ -433,11 +757,10 @@ onAuthStateChanged(auth, (user) => {
                 return;
             }
         }
-        // ✅ AUCUN TOAST ICI - on laisse les formulaires gérer
         showLogin();
     } else {
         showLogin();
     }
 });
 
-console.log("🚀 ESP Pay - Version sans toast en double");
+console.log("🚀 ESP Pay - Version complète");
