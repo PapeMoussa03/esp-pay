@@ -63,11 +63,13 @@
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Mail Universitaire</label>
                         <input type="email" id="login-email" placeholder="prenom.nom@esp.sn" 
                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm">
+                        <p id="login-email-error" class="text-xs text-red-600 mt-1 hidden">Veuillez saisir un email valide.</p>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Mot de passe</label>
                         <input type="password" id="login-password" placeholder="••••••••" 
                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-esp-blue outline-none text-sm">
+                        <p id="login-password-error" class="text-xs text-red-600 mt-1 hidden">Le mot de passe est requis.</p>
                     </div>
                     <button type="submit" id="btn-login" 
                             class="w-full bg-esp-blue hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl transition cursor-pointer shadow-md flex items-center justify-center gap-2">
@@ -75,6 +77,11 @@
                         Se connecter
                     </button>
                 </form>
+                <div class="text-center mt-2">
+                    <a href="reset-password.html" class="text-xs text-esp-blue hover:underline font-medium">
+                        Mot de passe oublié ?
+                    </a>
+                </div>
             </div>
 
             <!-- ====== SECTION INSCRIPTION ====== -->
@@ -90,11 +97,13 @@
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Prénom</label>
                             <input type="text" id="reg-prenom" placeholder="Awa" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-xl outline-none text-sm focus:ring-2 focus:ring-esp-blue">
+                            <p id="reg-prenom-error" class="text-xs text-red-600 mt-1 hidden">Le prénom est requis.</p>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Nom</label>
                             <input type="text" id="reg-nom" placeholder="Ndiaye" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-xl outline-none text-sm focus:ring-2 focus:ring-esp-blue">
+                            <p id="reg-nom-error" class="text-xs text-red-600 mt-1 hidden">Le nom est requis.</p>
                         </div>
                     </div>
 
@@ -108,6 +117,7 @@
                             <option value="Licence Pro">Licence Professionnelle (Privé)</option>
                             <option value="Master">Master (Privé)</option>
                         </select>
+                        <p id="reg-cycle-error" class="text-xs text-red-600 mt-1 hidden">Veuillez choisir un cycle.</p>
                     </div>
 
                     <div>
@@ -117,6 +127,7 @@
                                 disabled>
                             <option value="">Sélectionnez d'abord le cycle</option>
                         </select>
+                        <p id="reg-niveau-error" class="text-xs text-red-600 mt-1 hidden">Veuillez choisir un niveau.</p>
                     </div>
 
                     <div>
@@ -126,6 +137,7 @@
                                 disabled>
                             <option value="">Sélectionnez d'abord la classe</option>
                         </select>
+                        <p id="reg-option-error" class="text-xs text-red-600 mt-1 hidden">Veuillez choisir une option.</p>
                     </div>
 
                     <div class="space-y-3 p-3 bg-gray-50 border border-gray-200 rounded-xl">
@@ -133,11 +145,13 @@
                             <label id="label-document" class="block text-xs font-semibold text-gray-700 mb-1">Numéro de Carte Étudiant</label>
                             <input type="text" id="reg-document" placeholder="Ex: 2026ESP9999" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm uppercase outline-none focus:ring-2 focus:ring-esp-blue">
+                            <p id="reg-document-error" class="text-xs text-red-600 mt-1 hidden">Le numéro de carte est requis.</p>
                         </div>
                         <div>
                             <label id="label-photo" class="block text-xs font-semibold text-gray-700 mb-1">Photo de la Carte</label>
                             <input type="file" id="reg-photo" accept="image/*" 
                                    class="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs cursor-pointer">
+                            <p id="reg-photo-error" class="text-xs text-red-600 mt-1 hidden">La photo est requise.</p>
                         </div>
                         <p id="help-document" class="text-[10px] text-gray-400">Champs requis pour la vérification administrative.</p>
                     </div>
@@ -146,6 +160,7 @@
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Mail Universitaire</label>
                         <input type="email" id="reg-email" placeholder="prenom.nom@esp.sn" 
                                class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-esp-blue">
+                        <p id="reg-email-error" class="text-xs text-red-600 mt-1 hidden">Utilisez votre email @esp.sn ou @ucad.edu.sn.</p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -153,11 +168,13 @@
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Mot de passe</label>
                             <input type="password" id="reg-password" placeholder="••••••••" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-esp-blue">
+                            <p id="reg-password-error" class="text-xs text-red-600 mt-1 hidden">6 caractères minimum.</p>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Confirmation</label>
                             <input type="password" id="reg-password-confirm" placeholder="••••••••" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-esp-blue">
+                            <p id="reg-password-confirm-error" class="text-xs text-red-600 mt-1 hidden">Les mots de passe ne correspondent pas.</p>
                         </div>
                     </div>
 
@@ -263,32 +280,36 @@
                 <div id="section-settings" class="hidden space-y-4">
 
                     <!-- 🌙 Thème -->
-                    <div class="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
-                        <div class="flex items-center gap-3">
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <div id="theme-toggle" class="flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer transition">
                             <i class="fa-solid fa-palette text-gray-500 text-lg w-6"></i>
-                            <p class="text-sm font-bold">Thème</p>
+                            <p class="text-sm font-bold flex-1">Thème</p>
+                            <span id="theme-arrow" class="text-gray-400 text-sm transition-transform">▶</span>
                         </div>
-                        <div class="flex gap-3">
-                            <button id="theme-light" class="flex-1 py-2 px-4 rounded-xl border-2 border-esp-blue bg-esp-blue text-white text-sm font-bold transition cursor-pointer">
-                                ☀️ Clair
-                            </button>
-                            <button id="theme-dark" class="flex-1 py-2 px-4 rounded-xl border-2 border-gray-300 bg-white text-gray-700 text-sm font-medium transition cursor-pointer hover:border-gray-400">
-                                🌙 Sombre
-                            </button>
+                        <div id="theme-content" class="hidden p-4 pt-0 space-y-3">
+                            <div class="flex gap-3">
+                                <button id="theme-light" class="flex-1 py-2 px-4 rounded-xl border-2 border-esp-blue bg-esp-blue text-white text-sm font-bold transition cursor-pointer">
+                                    ☀️ Clair
+                                </button>
+                                <button id="theme-dark" class="flex-1 py-2 px-4 rounded-xl border-2 border-gray-300 bg-white text-gray-700 text-sm font-medium transition cursor-pointer hover:border-gray-400">
+                                    🌙 Sombre
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 🔐 Modifier le mot de passe (2 étapes) -->
-                    <div id="password-section" class="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
-                        <div class="flex items-center gap-3">
+                    <!-- 🔐 Modifier le mot de passe -->
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <div id="password-toggle" class="flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer transition">
                             <i class="fa-solid fa-lock text-gray-500 text-lg w-6"></i>
-                            <p class="text-sm font-bold">Modifier le mot de passe</p>
+                            <p class="text-sm font-bold flex-1">Modifier le mot de passe</p>
+                            <span id="password-arrow" class="text-gray-400 text-sm transition-transform">▶</span>
                         </div>
+                        <div id="password-content" class="hidden p-4 pt-0 space-y-3">
+                            <p class="text-xs text-gray-400">Pour des raisons de sécurité, veuillez saisir votre mot de passe actuel.</p>
 
-                        <!-- Étape 1 : Vérification du mot de passe actuel -->
-                        <div id="step-current-password">
-                            <p class="text-xs text-gray-400 mb-3">Pour des raisons de sécurité, veuillez saisir votre mot de passe actuel.</p>
-                            <div class="space-y-2">
+                            <!-- Étape 1 : Vérification du mot de passe actuel -->
+                            <div id="step-current-password" class="space-y-2">
                                 <input type="password" id="settings-current-password" placeholder="Mot de passe actuel" 
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-esp-blue outline-none">
                                 <button id="btn-verify-password" 
@@ -296,12 +317,10 @@
                                     <i class="fa-solid fa-check mr-2"></i>Vérifier
                                 </button>
                             </div>
-                        </div>
 
-                        <!-- Étape 2 : Nouveau mot de passe (cachée par défaut) -->
-                        <div id="step-new-password" class="hidden space-y-2">
-                            <p class="text-xs text-emerald-600 font-medium">✅ Mot de passe actuel vérifié</p>
-                            <div class="space-y-2">
+                            <!-- Étape 2 : Nouveau mot de passe (cachée par défaut) -->
+                            <div id="step-new-password" class="hidden space-y-2">
+                                <p class="text-xs text-emerald-600 font-medium">✅ Mot de passe actuel vérifié</p>
                                 <input type="password" id="settings-new-password" placeholder="Nouveau mot de passe (min 6 caractères)" 
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-esp-blue outline-none">
                                 <input type="password" id="settings-confirm-password" placeholder="Confirmer le nouveau mot de passe" 
@@ -315,75 +334,84 @@
                     </div>
 
                     <!-- 📞 Contacter la direction -->
-                    <div class="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
-                        <div class="flex items-center gap-3">
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <div id="contact-toggle" class="flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer transition">
                             <i class="fa-solid fa-envelope text-gray-500 text-lg w-6"></i>
-                            <p class="text-sm font-bold">Contacter la direction</p>
+                            <p class="text-sm font-bold flex-1">Contacter la direction</p>
+                            <span id="contact-arrow" class="text-gray-400 text-sm transition-transform">▶</span>
                         </div>
-                        <p class="text-xs text-gray-400">Une question ? L'équipe administrative vous répondra dans les plus brefs délais.</p>
-                        <a href="mailto:votre.email@test.com" 
-                           class="flex items-center justify-center gap-2 w-full bg-esp-blue hover:bg-blue-800 text-white text-sm font-bold py-2.5 rounded-lg transition cursor-pointer">
-                            <i class="fa-solid fa-paper-plane"></i>
-                            Envoyer un email
-                        </a>
+                        <div id="contact-content" class="hidden p-4 pt-0 space-y-3">
+                            <p class="text-xs text-gray-400">Une question ? L'équipe administrative vous répondra dans les plus brefs délais.</p>
+                            <a href="mailto:votre.email@test.com" 
+                               class="flex items-center justify-center gap-2 w-full bg-esp-blue hover:bg-blue-800 text-white text-sm font-bold py-2.5 rounded-lg transition cursor-pointer">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                Envoyer un email
+                            </a>
+                        </div>
                     </div>
 
                     <!-- 💬 Envoyer des commentaires -->
-                    <div class="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
-                        <div class="flex items-center gap-3">
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <div id="feedback-toggle" class="flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer transition">
                             <i class="fa-solid fa-comment text-gray-500 text-lg w-6"></i>
-                            <p class="text-sm font-bold">Envoyer des commentaires</p>
+                            <p class="text-sm font-bold flex-1">Envoyer des commentaires</p>
+                            <span id="feedback-arrow" class="text-gray-400 text-sm transition-transform">▶</span>
                         </div>
-                        <p class="text-xs text-gray-400">Vos retours nous aident à améliorer ESP Pay.</p>
-                        <form id="feedback-form" class="space-y-2">
-                            <input type="text" id="feedback-nom" placeholder="Votre nom" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-esp-blue outline-none">
-                            <input type="email" id="feedback-email" placeholder="Votre email" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-esp-blue outline-none">
-                            <textarea id="feedback-message" rows="3" placeholder="Votre message..." 
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-esp-blue outline-none resize-none"></textarea>
-                            <button type="submit" 
-                                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2 rounded-lg transition cursor-pointer">
-                                <i class="fa-solid fa-paper-plane mr-2"></i>Envoyer
-                            </button>
-                        </form>
+                        <div id="feedback-content" class="hidden p-4 pt-0 space-y-3">
+                            <p class="text-xs text-gray-400">Vos retours nous aident à améliorer ESP Pay.</p>
+                            <form id="feedback-form" class="space-y-2">
+                                <input type="text" id="feedback-nom" placeholder="Votre nom" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-esp-blue outline-none">
+                                <input type="email" id="feedback-email" placeholder="Votre email" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-esp-blue outline-none">
+                                <textarea id="feedback-message" rows="3" placeholder="Votre message..." 
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-esp-blue outline-none resize-none"></textarea>
+                                <button type="submit" 
+                                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2 rounded-lg transition cursor-pointer">
+                                    <i class="fa-solid fa-paper-plane mr-2"></i>Envoyer
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
                     <!-- ❓ Aide -->
-                    <div class="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
-                        <div class="flex items-center gap-3">
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <div id="help-toggle" class="flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer transition">
                             <i class="fa-solid fa-circle-question text-gray-500 text-lg w-6"></i>
-                            <p class="text-sm font-bold">Aide</p>
+                            <p class="text-sm font-bold flex-1">Aide</p>
+                            <span id="help-arrow" class="text-gray-400 text-sm transition-transform">▶</span>
                         </div>
-                        <div class="space-y-2 text-sm">
-                            <details class="group">
-                                <summary class="cursor-pointer font-medium text-gray-700 hover:text-esp-blue transition">
-                                    <i class="fa-solid fa-chevron-right text-xs mr-2 group-open:rotate-90 transition"></i>
-                                    Comment créer un compte ?
-                                </summary>
-                                <p class="text-xs text-gray-500 mt-2 pl-4">Rendez-vous sur l'onglet "Inscription", remplissez tous les champs et validez. Un email de confirmation vous sera envoyé.</p>
-                            </details>
-                            <details class="group">
-                                <summary class="cursor-pointer font-medium text-gray-700 hover:text-esp-blue transition">
-                                    <i class="fa-solid fa-chevron-right text-xs mr-2 group-open:rotate-90 transition"></i>
-                                    Comment effectuer un paiement ?
-                                </summary>
-                                <p class="text-xs text-gray-500 mt-2 pl-4">Connectez-vous, allez dans l'onglet "Accueil", saisissez le montant, choisissez votre opérateur et validez.</p>
-                            </details>
-                            <details class="group">
-                                <summary class="cursor-pointer font-medium text-gray-700 hover:text-esp-blue transition">
-                                    <i class="fa-solid fa-chevron-right text-xs mr-2 group-open:rotate-90 transition"></i>
-                                    Je n'arrive pas à me connecter
-                                </summary>
-                                <p class="text-xs text-gray-500 mt-2 pl-4">Vérifiez que votre email est bien confirmé. Si vous avez oublié votre mot de passe, contactez la direction.</p>
-                            </details>
-                            <details class="group">
-                                <summary class="cursor-pointer font-medium text-gray-700 hover:text-esp-blue transition">
-                                    <i class="fa-solid fa-chevron-right text-xs mr-2 group-open:rotate-90 transition"></i>
-                                    Comment contacter le support ?
-                                </summary>
-                                <p class="text-xs text-gray-500 mt-2 pl-4">Utilisez la section "Contacter la direction" ou envoyez-nous un commentaire via le formulaire dédié.</p>
-                            </details>
+                        <div id="help-content" class="hidden p-4 pt-0 space-y-3">
+                            <div class="space-y-2 text-sm">
+                                <details class="group">
+                                    <summary class="cursor-pointer font-medium text-gray-700 hover:text-esp-blue transition">
+                                        <i class="fa-solid fa-chevron-right text-xs mr-2 group-open:rotate-90 transition"></i>
+                                        Comment créer un compte ?
+                                    </summary>
+                                    <p class="text-xs text-gray-500 mt-2 pl-4">Rendez-vous sur l'onglet "Inscription", remplissez tous les champs et validez. Un email de confirmation vous sera envoyé.</p>
+                                </details>
+                                <details class="group">
+                                    <summary class="cursor-pointer font-medium text-gray-700 hover:text-esp-blue transition">
+                                        <i class="fa-solid fa-chevron-right text-xs mr-2 group-open:rotate-90 transition"></i>
+                                        Comment effectuer un paiement ?
+                                    </summary>
+                                    <p class="text-xs text-gray-500 mt-2 pl-4">Connectez-vous, allez dans l'onglet "Accueil", saisissez le montant, choisissez votre opérateur et validez.</p>
+                                </details>
+                                <details class="group">
+                                    <summary class="cursor-pointer font-medium text-gray-700 hover:text-esp-blue transition">
+                                        <i class="fa-solid fa-chevron-right text-xs mr-2 group-open:rotate-90 transition"></i>
+                                        Je n'arrive pas à me connecter
+                                    </summary>
+                                    <p class="text-xs text-gray-500 mt-2 pl-4">Vérifiez que votre email est bien confirmé. Si vous avez oublié votre mot de passe, contactez la direction.</p>
+                                </details>
+                                <details class="group">
+                                    <summary class="cursor-pointer font-medium text-gray-700 hover:text-esp-blue transition">
+                                        <i class="fa-solid fa-chevron-right text-xs mr-2 group-open:rotate-90 transition"></i>
+                                        Comment contacter le support ?
+                                    </summary>
+                                    <p class="text-xs text-gray-500 mt-2 pl-4">Utilisez la section "Contacter la direction" ou envoyez-nous un commentaire via le formulaire dédié.</p>
+                                </details>
+                            </div>
                         </div>
                     </div>
 

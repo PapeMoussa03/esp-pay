@@ -22,6 +22,11 @@
     background: #003366;
 }
 
+/* Rotation de la flèche */
+.rotate-90 {
+    transform: rotate(90deg);
+}
+
 /* ====== DARK MODE ====== */
 .dark-mode {
     background-color: #0f172a !important;

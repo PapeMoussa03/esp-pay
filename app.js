@@ -237,6 +237,69 @@ function showModal(title, message, type = 'success') {
 }
 
 // ============================================================
+// VALIDATION EN DIRECT
+// ============================================================
+function setFieldError(inputId, errorId, condition) {
+    const input = document.getElementById(inputId);
+    const error = document.getElementById(errorId);
+    
+    if (!input || !error) return;
+
+    const check = () => {
+        const value = input.value.trim();
+        if (condition(value)) {
+            input.classList.add('border-red-500', 'ring-red-500');
+            input.classList.remove('border-gray-300');
+            error.classList.remove('hidden');
+        } else {
+            input.classList.remove('border-red-500', 'ring-red-500');
+            input.classList.add('border-gray-300');
+            error.classList.add('hidden');
+        }
+    };
+
+    input.addEventListener('input', check);
+    return check;
+}
+
+// ============================================================
+// VALIDATIONS EN DIRECT - FORMULAIRE DE CONNEXION
+// ============================================================
+setFieldError('login-email', 'login-email-error', (v) => v.length > 0 && !v.endsWith('@esp.sn') && !v.endsWith('@ucad.edu.sn'));
+setFieldError('login-password', 'login-password-error', (v) => v.length > 0 && v.length < 6);
+
+// ============================================================
+// VALIDATIONS EN DIRECT - FORMULAIRE D'INSCRIPTION
+// ============================================================
+setFieldError('reg-prenom', 'reg-prenom-error', (v) => v.length === 0);
+setFieldError('reg-nom', 'reg-nom-error', (v) => v.length === 0);
+setFieldError('reg-document', 'reg-document-error', (v) => v.length === 0);
+setFieldError('reg-email', 'reg-email-error', (v) => v.length > 0 && !v.endsWith('@esp.sn') && !v.endsWith('@ucad.edu.sn'));
+setFieldError('reg-password', 'reg-password-error', (v) => v.length > 0 && v.length < 6);
+
+// Confirmation mot de passe (spécial)
+const regPassword = document.getElementById('reg-password');
+const regPasswordConfirm = document.getElementById('reg-password-confirm');
+const regPasswordConfirmError = document.getElementById('reg-password-confirm-error');
+
+function checkPasswordConfirm() {
+    const pwd = regPassword.value;
+    const confirm = regPasswordConfirm.value;
+    if (confirm.length > 0 && pwd !== confirm) {
+        regPasswordConfirm.classList.add('border-red-500', 'ring-red-500');
+        regPasswordConfirm.classList.remove('border-gray-300');
+        regPasswordConfirmError.classList.remove('hidden');
+    } else {
+        regPasswordConfirm.classList.remove('border-red-500', 'ring-red-500');
+        regPasswordConfirm.classList.add('border-gray-300');
+        regPasswordConfirmError.classList.add('hidden');
+    }
+}
+
+regPassword.addEventListener('input', checkPasswordConfirm);
+regPasswordConfirm.addEventListener('input', checkPasswordConfirm);
+
+// ============================================================
 // VARIABLES GLOBALES
 // ============================================================
 let montantReelGlobal = 0;
@@ -357,23 +420,96 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const password = document.getElementById('reg-password').value;
     const confirm = document.getElementById('reg-password-confirm').value;
 
-    if (!prenom || !nom || !cycle || !niveau || !option || !docValue || !photo || !email || !password) {
-        showToast("Veuillez remplir tous les champs.", "error");
-        return;
+    // ====== VALIDATIONS AVEC ERREURS VISUELLES ======
+    let hasError = false;
+
+    if (!prenom) {
+        document.getElementById('reg-prenom').classList.add('border-red-500', 'ring-red-500');
+        document.getElementById('reg-prenom').classList.remove('border-gray-300');
+        document.getElementById('reg-prenom-error').classList.remove('hidden');
+        hasError = true;
     }
 
-    if (!email.endsWith('@esp.sn') && !email.endsWith('@ucad.edu.sn')) {
-        showToast("Seuls les e-mails @esp.sn et @ucad.edu.sn sont autorisés.", "error");
-        return;
+    if (!nom) {
+        document.getElementById('reg-nom').classList.add('border-red-500', 'ring-red-500');
+        document.getElementById('reg-nom').classList.remove('border-gray-300');
+        document.getElementById('reg-nom-error').classList.remove('hidden');
+        hasError = true;
     }
 
-    if (password !== confirm) {
-        showToast("Les mots de passe ne correspondent pas.", "error");
-        return;
+    if (!cycle) {
+        document.getElementById('reg-cycle').classList.add('border-red-500', 'ring-red-500');
+        document.getElementById('reg-cycle').classList.remove('border-gray-300');
+        document.getElementById('reg-cycle-error').classList.remove('hidden');
+        hasError = true;
     }
 
-    if (password.length < 6) {
-        showToast("Le mot de passe doit contenir au moins 6 caractères.", "error");
+    if (!niveau) {
+        document.getElementById('reg-niveau').classList.add('border-red-500', 'ring-red-500');
+        document.getElementById('reg-niveau').classList.remove('border-gray-300');
+        document.getElementById('reg-niveau-error').classList.remove('hidden');
+        hasError = true;
+    }
+
+    if (!option) {
+        document.getElementById('reg-option').classList.add('border-red-500', 'ring-red-500');
+        document.getElementById('reg-option').classList.remove('border-gray-300');
+        document.getElementById('reg-option-error').classList.remove('hidden');
+        hasError = true;
+    }
+
+    if (!docValue) {
+        document.getElementById('reg-document').classList.add('border-red-500', 'ring-red-500');
+        document.getElementById('reg-document').classList.remove('border-gray-300');
+        document.getElementById('reg-document-error').classList.remove('hidden');
+        hasError = true;
+    }
+
+    if (!photo) {
+        document.getElementById('reg-photo').classList.add('border-red-500', 'ring-red-500');
+        document.getElementById('reg-photo').classList.remove('border-gray-300');
+        document.getElementById('reg-photo-error').classList.remove('hidden');
+        hasError = true;
+    }
+
+    if (!email) {
+        document.getElementById('reg-email').classList.add('border-red-500', 'ring-red-500');
+        document.getElementById('reg-email').classList.remove('border-gray-300');
+        document.getElementById('reg-email-error').classList.remove('hidden');
+        hasError = true;
+    } else if (!email.endsWith('@esp.sn') && !email.endsWith('@ucad.edu.sn')) {
+        document.getElementById('reg-email').classList.add('border-red-500', 'ring-red-500');
+        document.getElementById('reg-email').classList.remove('border-gray-300');
+        document.getElementById('reg-email-error').classList.remove('hidden');
+        hasError = true;
+    }
+
+    if (!password) {
+        document.getElementById('reg-password').classList.add('border-red-500', 'ring-red-500');
+        document.getElementById('reg-password').classList.remove('border-gray-300');
+        document.getElementById('reg-password-error').classList.remove('hidden');
+        hasError = true;
+    } else if (password.length < 6) {
+        document.getElementById('reg-password').classList.add('border-red-500', 'ring-red-500');
+        document.getElementById('reg-password').classList.remove('border-gray-300');
+        document.getElementById('reg-password-error').classList.remove('hidden');
+        hasError = true;
+    }
+
+    if (!confirm) {
+        document.getElementById('reg-password-confirm').classList.add('border-red-500', 'ring-red-500');
+        document.getElementById('reg-password-confirm').classList.remove('border-gray-300');
+        document.getElementById('reg-password-confirm-error').classList.remove('hidden');
+        hasError = true;
+    } else if (password !== confirm) {
+        document.getElementById('reg-password-confirm').classList.add('border-red-500', 'ring-red-500');
+        document.getElementById('reg-password-confirm').classList.remove('border-gray-300');
+        document.getElementById('reg-password-confirm-error').classList.remove('hidden');
+        hasError = true;
+    }
+
+    if (hasError) {
+        showToast("Veuillez corriger les champs en rouge.", "error");
         return;
     }
 
@@ -420,6 +556,13 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         regOption.innerHTML = '<option value="">Sélectionnez d\'abord la classe</option>';
         regOption.disabled = true;
 
+        // Réinitialiser les styles
+        document.querySelectorAll('#register-form input, #register-form select').forEach(el => {
+            el.classList.remove('border-red-500', 'ring-red-500');
+            el.classList.add('border-gray-300');
+        });
+        document.querySelectorAll('#register-form .text-red-600').forEach(el => el.classList.add('hidden'));
+
         showLogin();
 
     } catch (error) {
@@ -441,11 +584,53 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const email = document.getElementById('login-email').value.trim().toLowerCase();
-    const password = document.getElementById('login-password').value;
+    const emailInput = document.getElementById('login-email');
+    const passwordInput = document.getElementById('login-password');
+    const emailError = document.getElementById('login-email-error');
+    const passwordError = document.getElementById('login-password-error');
+    
+    const email = emailInput.value.trim().toLowerCase();
+    const password = passwordInput.value;
 
-    if (!email || !password) {
-        showToast("Veuillez remplir tous les champs.", "error");
+    // Réinitialiser les erreurs
+    emailInput.classList.remove('border-red-500', 'ring-red-500');
+    emailInput.classList.add('border-gray-300');
+    emailError.classList.add('hidden');
+    passwordInput.classList.remove('border-red-500', 'ring-red-500');
+    passwordInput.classList.add('border-gray-300');
+    passwordError.classList.add('hidden');
+
+    let hasError = false;
+
+    if (!email) {
+        emailInput.classList.add('border-red-500', 'ring-red-500');
+        emailInput.classList.remove('border-gray-300');
+        emailError.classList.remove('hidden');
+        emailError.innerText = 'Veuillez saisir votre email.';
+        hasError = true;
+    } else if (!email.endsWith('@esp.sn') && !email.endsWith('@ucad.edu.sn')) {
+        emailInput.classList.add('border-red-500', 'ring-red-500');
+        emailInput.classList.remove('border-gray-300');
+        emailError.classList.remove('hidden');
+        emailError.innerText = 'Veuillez utiliser votre email @esp.sn ou @ucad.edu.sn.';
+        hasError = true;
+    }
+
+    if (!password) {
+        passwordInput.classList.add('border-red-500', 'ring-red-500');
+        passwordInput.classList.remove('border-gray-300');
+        passwordError.classList.remove('hidden');
+        passwordError.innerText = 'Veuillez saisir votre mot de passe.';
+        hasError = true;
+    } else if (password.length < 6) {
+        passwordInput.classList.add('border-red-500', 'ring-red-500');
+        passwordInput.classList.remove('border-gray-300');
+        passwordError.classList.remove('hidden');
+        passwordError.innerText = 'Le mot de passe doit contenir au moins 6 caractères.';
+        hasError = true;
+    }
+
+    if (hasError) {
         return;
     }
 
@@ -477,18 +662,32 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             if (etudiant.email === email) {
                 chargerDashboard(etudiant);
             } else {
-                showToast("❌ Données incorrectes. Réinscrivez-vous.", "error");
+                emailInput.classList.add('border-red-500', 'ring-red-500');
+                emailInput.classList.remove('border-gray-300');
+                emailError.classList.remove('hidden');
+                emailError.innerText = '❌ Données incorrectes. Réinscrivez-vous.';
                 await signOut(auth);
             }
         } else {
-            showToast("❌ Aucun profil trouvé. Inscrivez-vous.", "error");
+            emailInput.classList.add('border-red-500', 'ring-red-500');
+            emailInput.classList.remove('border-gray-300');
+            emailError.classList.remove('hidden');
+            emailError.innerText = '❌ Aucun profil trouvé. Inscrivez-vous.';
             await signOut(auth);
         }
 
     } catch (error) {
         console.error("❌ Erreur:", error);
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-            showToast("❌ Email ou mot de passe incorrect.", "error");
+            // Afficher l'erreur sous le champ email
+            emailInput.classList.add('border-red-500', 'ring-red-500');
+            emailInput.classList.remove('border-gray-300');
+            emailError.classList.remove('hidden');
+            emailError.innerText = '❌ Email ou mot de passe incorrect.';
+            passwordInput.classList.add('border-red-500', 'ring-red-500');
+            passwordInput.classList.remove('border-gray-300');
+            passwordError.classList.remove('hidden');
+            passwordError.innerText = '❌ Email ou mot de passe incorrect.';
         } else {
             showToast("❌ Erreur: " + error.message, "error");
         }
@@ -583,11 +782,15 @@ btnVerify.addEventListener('click', async () => {
     const currentPwd = currentPasswordInput.value;
 
     if (!currentPwd) {
+        currentPasswordInput.classList.add('border-red-500', 'ring-red-500');
+        currentPasswordInput.classList.remove('border-gray-300');
         showToast("Veuillez saisir votre mot de passe actuel.", "error");
         return;
     }
 
     if (currentPwd.length < 6) {
+        currentPasswordInput.classList.add('border-red-500', 'ring-red-500');
+        currentPasswordInput.classList.remove('border-gray-300');
         showToast("Le mot de passe doit contenir au moins 6 caractères.", "error");
         return;
     }
@@ -605,15 +808,18 @@ btnVerify.addEventListener('click', async () => {
         const credential = EmailAuthProvider.credential(user.email, currentPwd);
         await reauthenticateWithCredential(user, credential);
 
-        // Mot de passe correct : passer à l'étape 2
         stepCurrentPassword.classList.add('hidden');
         stepNewPassword.classList.remove('hidden');
         currentPasswordInput.value = "";
+        currentPasswordInput.classList.remove('border-red-500', 'ring-red-500');
+        currentPasswordInput.classList.add('border-gray-300');
         showToast("✅ Mot de passe vérifié, vous pouvez maintenant le modifier.", "success");
 
     } catch (error) {
         console.error("❌ Erreur:", error);
         if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+            currentPasswordInput.classList.add('border-red-500', 'ring-red-500');
+            currentPasswordInput.classList.remove('border-gray-300');
             showToast("❌ Mot de passe actuel incorrect.", "error");
         } else {
             showToast("❌ Erreur: " + error.message, "error");
@@ -630,16 +836,28 @@ btnUpdate.addEventListener('click', async () => {
     const confirmPwd = confirmPasswordInput.value;
 
     if (!newPwd || !confirmPwd) {
+        if (!newPwd) {
+            newPasswordInput.classList.add('border-red-500', 'ring-red-500');
+            newPasswordInput.classList.remove('border-gray-300');
+        }
+        if (!confirmPwd) {
+            confirmPasswordInput.classList.add('border-red-500', 'ring-red-500');
+            confirmPasswordInput.classList.remove('border-gray-300');
+        }
         showToast("Veuillez remplir tous les champs.", "error");
         return;
     }
 
     if (newPwd.length < 6) {
+        newPasswordInput.classList.add('border-red-500', 'ring-red-500');
+        newPasswordInput.classList.remove('border-gray-300');
         showToast("Le mot de passe doit contenir au moins 6 caractères.", "error");
         return;
     }
 
     if (newPwd !== confirmPwd) {
+        confirmPasswordInput.classList.add('border-red-500', 'ring-red-500');
+        confirmPasswordInput.classList.remove('border-gray-300');
         showToast("❌ Les mots de passe ne correspondent pas.", "error");
         newPasswordInput.value = "";
         confirmPasswordInput.value = "";
@@ -661,9 +879,12 @@ btnUpdate.addEventListener('click', async () => {
 
         showModal("✅ Succès", "Votre mot de passe a bien été mis à jour.", "success");
 
-        // Réinitialiser et revenir à l'étape 1
         newPasswordInput.value = "";
         confirmPasswordInput.value = "";
+        newPasswordInput.classList.remove('border-red-500', 'ring-red-500');
+        newPasswordInput.classList.add('border-gray-300');
+        confirmPasswordInput.classList.remove('border-red-500', 'ring-red-500');
+        confirmPasswordInput.classList.add('border-gray-300');
         stepNewPassword.classList.add('hidden');
         stepCurrentPassword.classList.remove('hidden');
 
@@ -762,5 +983,31 @@ onAuthStateChanged(auth, (user) => {
         showLogin();
     }
 });
+
+// ============================================================
+// TOGGLES DES SECTIONS PARAMÈTRES
+// ============================================================
+
+// Fonction pour basculer une section
+function toggleSection(toggleId, contentId, arrowId) {
+    const toggle = document.getElementById(toggleId);
+    const content = document.getElementById(contentId);
+    const arrow = document.getElementById(arrowId);
+
+    if (toggle && content && arrow) {
+        toggle.addEventListener('click', () => {
+            content.classList.toggle('hidden');
+            arrow.classList.toggle('rotate-90');
+            arrow.textContent = content.classList.contains('hidden') ? '▶' : '▼';
+        });
+    }
+}
+
+// Initialiser tous les toggles
+toggleSection('theme-toggle', 'theme-content', 'theme-arrow');
+toggleSection('password-toggle', 'password-content', 'password-arrow');
+toggleSection('contact-toggle', 'contact-content', 'contact-arrow');
+toggleSection('feedback-toggle', 'feedback-content', 'feedback-arrow');
+toggleSection('help-toggle', 'help-content', 'help-arrow');
 
 console.log("🚀 ESP Pay - Version complète");
