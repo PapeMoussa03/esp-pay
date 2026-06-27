@@ -182,25 +182,103 @@ regNiveau.addEventListener('change', () => {
 });
 
 // ============================================================
-// TOAST & MODAL
+// TOASTS PERSONNALISÉS
 // ============================================================
-function showToast(message, type = 'error') {
+function showToast(message, type = 'success', duration = 4000) {
     const container = document.getElementById('toast-container');
-    container.innerHTML = '';
-    const toast = document.createElement('div');
-    const bgClass = type === 'success' 
-        ? 'bg-emerald-50 border-emerald-200 text-emerald-900' 
-        : 'bg-rose-50 border-rose-200 text-rose-900';
-    const iconClass = type === 'success' 
-        ? 'fa-circle-check text-emerald-600' 
-        : 'fa-circle-exclamation text-rose-600';
     
-    toast.className = `flex items-center gap-3 p-4 rounded-xl border ${bgClass} shadow-lg text-sm font-medium`;
-    toast.innerHTML = `<i class="fa-solid ${iconClass} text-lg"></i><div class="flex-grow">${message}</div>`;
+    const types = {
+        success: {
+            icon: 'fa-check',
+            title: 'Succès',
+            class: 'toast-success'
+        },
+        error: {
+            icon: 'fa-xmark',
+            title: 'Erreur',
+            class: 'toast-error'
+        },
+        info: {
+            icon: 'fa-circle-info',
+            title: 'Information',
+            class: 'toast-info'
+        },
+        warning: {
+            icon: 'fa-triangle-exclamation',
+            title: 'Attention',
+            class: 'toast-warning'
+        }
+    };
+
+    const typeConfig = types[type] || types.info;
+
+    const toast = document.createElement('div');
+    toast.className = `toast-item ${typeConfig.class}`;
+    
+    toast.innerHTML = `
+        <div class="toast-icon">
+            <i class="fa-solid ${typeConfig.icon}"></i>
+        </div>
+        <div class="toast-content">
+            <div class="toast-title">${typeConfig.title}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" aria-label="Fermer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="toast-progress"></div>
+    `;
+
     container.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
+
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    const closeBtn = toast.querySelector('.toast-close');
+    closeBtn.addEventListener('click', () => {
+        removeToast(toast);
+    });
+
+    let timeoutId = setTimeout(() => {
+        removeToast(toast);
+    }, duration);
+
+    toast.addEventListener('mouseenter', () => {
+        clearTimeout(timeoutId);
+        const progress = toast.querySelector('.toast-progress');
+        if (progress) {
+            progress.style.animationPlayState = 'paused';
+        }
+    });
+
+    toast.addEventListener('mouseleave', () => {
+        const progress = toast.querySelector('.toast-progress');
+        if (progress) {
+            progress.style.animationPlayState = 'running';
+        }
+        timeoutId = setTimeout(() => {
+            removeToast(toast);
+        }, 1500);
+    });
+
+    return toast;
 }
 
+function removeToast(toast) {
+    if (toast.classList.contains('hide')) return;
+    toast.classList.remove('show');
+    toast.classList.add('hide');
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 400);
+}
+
+// ============================================================
+// MODAL
+// ============================================================
 function showModal(title, message, type = 'success') {
     const modal = document.getElementById('custom-modal');
     const iconContainer = document.getElementById('modal-icon');
@@ -304,6 +382,141 @@ regPasswordConfirm.addEventListener('input', checkPasswordConfirm);
 // ============================================================
 let montantReelGlobal = 0;
 let soldeMasque = false;
+let dashboardCharge = false;
+
+// ============================================================
+// DATE DE DERNIÈRE CONNEXION
+// ============================================================
+function mettreAJourDateConnexion() {
+    const now = new Date();
+    const options = { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    };
+    const dateFormatee = now.toLocaleDateString('fr-FR', options);
+    localStorage.setItem('esp_pay_last_login', dateFormatee);
+    return dateFormatee;
+}
+
+function getDateDerniereConnexion() {
+    return localStorage.getItem('esp_pay_last_login') || 'Première connexion';
+}
+
+// ============================================================
+// ÉTAT DE VÉRIFICATION EMAIL
+// ============================================================
+function afficherStatutEmail(user) {
+    const emailStatusElement = document.getElementById('email-status');
+    if (!emailStatusElement) return;
+    
+    if (user.emailVerified) {
+        emailStatusElement.innerHTML = '✅ <span class="text-emerald-600">Email vérifié</span>';
+    } else {
+        emailStatusElement.innerHTML = '❌ <span class="text-red-600">Email non vérifié</span>';
+    }
+}
+
+// ============================================================
+// GÉNÉRATION DE REÇU PDF
+// ============================================================
+function genererReçu(transaction) {
+    if (typeof html2pdf === 'undefined') {
+        showToast("❌ La librairie PDF n'est pas chargée. Veuillez rafraîchir la page.", "error");
+        return;
+    }
+
+    const etudiantStr = localStorage.getItem('esp_pay_user');
+    if (!etudiantStr) {
+        showToast("❌ Profil introuvable.", "error");
+        return;
+    }
+    
+    const etudiant = JSON.parse(etudiantStr);
+    
+    const contenu = `
+        <div id="recu-content" style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 30px; background: white; border-radius: 8px;">
+            <div style="text-align: center; border-bottom: 3px solid #004b93; padding-bottom: 20px;">
+                <h1 style="color: #004b93; font-size: 24px; margin: 0;">ESP PAY</h1>
+                <p style="color: #55b748; font-size: 14px; margin: 5px 0 0;">École Supérieure Polytechnique de Dakar</p>
+            </div>
+            
+            <div style="text-align: center; margin: 25px 0;">
+                <h2 style="color: #1e293b; font-size: 20px; margin: 0;">📄 REÇU DE PAIEMENT</h2>
+            </div>
+            
+            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin: 5px 0;"><strong>Étudiant :</strong> ${etudiant.prenom} ${etudiant.nom}</p>
+                <p style="margin: 5px 0;"><strong>Email :</strong> ${etudiant.email}</p>
+                <p style="margin: 5px 0;"><strong>Cycle :</strong> ${etudiant.cycle} - ${etudiant.niveau}</p>
+                <p style="margin: 5px 0;"><strong>Option :</strong> ${etudiant.option}</p>
+            </div>
+            
+            <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <table style="width: 100%; font-size: 14px;">
+                    <tr>
+                        <td style="padding: 8px 0; color: #475569;"><strong>Montant</strong></td>
+                        <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #004b93; font-size: 18px;">
+                            ${transaction.montant.toLocaleString()} FCFA
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; color: #475569; border-top: 1px solid #e2e8f0;"><strong>Opérateur</strong></td>
+                        <td style="padding: 8px 0; text-align: right; border-top: 1px solid #e2e8f0;">${transaction.operateur}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; color: #475569; border-top: 1px solid #e2e8f0;"><strong>Date</strong></td>
+                        <td style="padding: 8px 0; text-align: right; border-top: 1px solid #e2e8f0;">${transaction.date}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; color: #475569; border-top: 1px solid #e2e8f0;"><strong>Transaction ID</strong></td>
+                        <td style="padding: 8px 0; text-align: right; border-top: 1px solid #e2e8f0; font-size: 12px;">${transaction.id_transaction}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; color: #475569; border-top: 1px solid #e2e8f0;"><strong>Statut</strong></td>
+                        <td style="padding: 8px 0; text-align: right; border-top: 1px solid #e2e8f0; color: #22c55e; font-weight: bold;">✅ Payé</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div style="text-align: center; border-top: 2px solid #e2e8f0; padding-top: 15px; font-size: 12px; color: #94a3b8;">
+                <p>Ce reçu est généré automatiquement par ESP PAY.</p>
+                <p>© 2026 École Supérieure Polytechnique de Dakar</p>
+            </div>
+        </div>
+    `;
+
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = contenu;
+    tempDiv.style.position = 'fixed';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '0';
+    tempDiv.style.zIndex = '9999';
+    document.body.appendChild(tempDiv);
+
+    const element = tempDiv.querySelector('#recu-content');
+
+    const opt = {
+        margin:        [10, 10, 10, 10],
+        filename:     `Recu_${etudiant.prenom}_${etudiant.nom}_${transaction.id_transaction}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+        document.body.removeChild(tempDiv);
+        showToast("✅ Reçu téléchargé avec succès !", "success");
+    }).catch((error) => {
+        document.body.removeChild(tempDiv);
+        console.error("❌ Erreur génération PDF:", error);
+        showToast("❌ Erreur lors du téléchargement du reçu.", "error");
+    });
+}
+
+window.genererReçu = genererReçu;
 
 // ============================================================
 // HISTORIQUE
@@ -324,18 +537,23 @@ function genererHistorique(transactions) {
         const item = document.createElement('div');
         item.className = "flex justify-between items-center p-3 bg-gray-50 border border-gray-100 rounded-xl text-xs";
         item.innerHTML = `
-            <div class="flex items-center gap-3">
-                <div class="h-8 w-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="h-8 w-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold flex-shrink-0">
                     <i class="fa-solid fa-arrow-down"></i>
                 </div>
-                <div>
+                <div class="min-w-0 flex-1">
                     <p class="font-bold text-gray-900">Scolarité via ${t.operateur}</p>
                     <p class="text-[10px] text-gray-400">${t.date}</p>
+                    <p class="text-[9px] text-gray-400 font-mono">${t.id_transaction}</p>
                 </div>
             </div>
-            <div class="text-right">
+            <div class="text-right flex flex-col items-end gap-1">
                 <p class="font-black text-emerald-700">+ ${t.montant.toLocaleString()} F</p>
                 <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">Réussi</span>
+                <button onclick="genererReçu(${JSON.stringify(t).replace(/"/g, '&quot;')})" 
+                        class="text-[10px] bg-esp-blue hover:bg-blue-800 text-white px-2 py-0.5 rounded font-medium transition cursor-pointer">
+                    <i class="fa-solid fa-download mr-1"></i>Reçu
+                </button>
             </div>
         `;
         container.appendChild(item);
@@ -346,10 +564,31 @@ function genererHistorique(transactions) {
 // CHARGEMENT DU DASHBOARD
 // ============================================================
 function chargerDashboard(etudiant) {
+    if (dashboardCharge) {
+        console.log("🔄 Dashboard déjà chargé, ignore.");
+        return;
+    }
+    
+    dashboardCharge = true;
     montantReelGlobal = etudiant.montant_deja_paye || 0;
+    
+    // Mettre à jour la date de dernière connexion
+    const derniereConnexion = mettreAJourDateConnexion();
     
     document.getElementById('student-name').innerText = `${etudiant.prenom} ${etudiant.nom}`;
     document.getElementById('student-info').innerText = `${etudiant.identifiant_type} : ${etudiant.identifiant_valeur}`;
+    
+    // Afficher la date de dernière connexion
+    const lastLoginElement = document.getElementById('last-login');
+    if (lastLoginElement) {
+        lastLoginElement.innerText = `🕐 Dernière connexion : ${derniereConnexion}`;
+    }
+    
+    // Afficher le statut de vérification email
+    const user = auth.currentUser;
+    if (user) {
+        afficherStatutEmail(user);
+    }
     
     const soldeCard = document.getElementById('solde-card');
     const formPaiement = document.getElementById('form-paiement-box');
@@ -379,7 +618,6 @@ function chargerDashboard(etudiant) {
 const themeLight = document.getElementById('theme-light');
 const themeDark = document.getElementById('theme-dark');
 
-// Restaurer le thème sauvegardé
 if (localStorage.getItem('esp_pay_theme') === 'dark') {
     document.getElementById('app-body').classList.add('dark-mode');
     themeDark.className = "flex-1 py-2 px-4 rounded-xl border-2 border-esp-blue bg-esp-blue text-white text-sm font-bold transition cursor-pointer";
@@ -420,7 +658,6 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const password = document.getElementById('reg-password').value;
     const confirm = document.getElementById('reg-password-confirm').value;
 
-    // ====== VALIDATIONS AVEC ERREURS VISUELLES ======
     let hasError = false;
 
     if (!prenom) {
@@ -556,7 +793,6 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         regOption.innerHTML = '<option value="">Sélectionnez d\'abord la classe</option>';
         regOption.disabled = true;
 
-        // Réinitialiser les styles
         document.querySelectorAll('#register-form input, #register-form select').forEach(el => {
             el.classList.remove('border-red-500', 'ring-red-500');
             el.classList.add('border-gray-300');
@@ -592,13 +828,14 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     const email = emailInput.value.trim().toLowerCase();
     const password = passwordInput.value;
 
-    // Réinitialiser les erreurs
     emailInput.classList.remove('border-red-500', 'ring-red-500');
     emailInput.classList.add('border-gray-300');
     emailError.classList.add('hidden');
+    emailError.innerText = '';
     passwordInput.classList.remove('border-red-500', 'ring-red-500');
     passwordInput.classList.add('border-gray-300');
     passwordError.classList.add('hidden');
+    passwordError.innerText = '';
 
     let hasError = false;
 
@@ -665,32 +902,46 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
                 emailInput.classList.add('border-red-500', 'ring-red-500');
                 emailInput.classList.remove('border-gray-300');
                 emailError.classList.remove('hidden');
-                emailError.innerText = '❌ Données incorrectes. Réinscrivez-vous.';
+                emailError.innerText = '❌ Les données de ce compte sont incorrectes. Veuillez vous réinscrire.';
                 await signOut(auth);
             }
         } else {
             emailInput.classList.add('border-red-500', 'ring-red-500');
             emailInput.classList.remove('border-gray-300');
             emailError.classList.remove('hidden');
-            emailError.innerText = '❌ Aucun profil trouvé. Inscrivez-vous.';
+            emailError.innerText = '❌ Aucun profil trouvé pour cet email. Veuillez vous inscrire.';
             await signOut(auth);
         }
 
     } catch (error) {
         console.error("❌ Erreur:", error);
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-            // Afficher l'erreur sous le champ email
-            emailInput.classList.add('border-red-500', 'ring-red-500');
-            emailInput.classList.remove('border-gray-300');
-            emailError.classList.remove('hidden');
-            emailError.innerText = '❌ Email ou mot de passe incorrect.';
-            passwordInput.classList.add('border-red-500', 'ring-red-500');
-            passwordInput.classList.remove('border-gray-300');
-            passwordError.classList.remove('hidden');
-            passwordError.innerText = '❌ Email ou mot de passe incorrect.';
+        
+        let errorMessage = '';
+        
+        if (error.code === 'auth/user-not-found') {
+            errorMessage = '❌ Aucun compte associé à cet email. Veuillez vous inscrire.';
+        } else if (error.code === 'auth/wrong-password') {
+            errorMessage = '❌ Mot de passe incorrect. Veuillez réessayer.';
+        } else if (error.code === 'auth/invalid-credential') {
+            errorMessage = '❌ Email ou mot de passe incorrect. Veuillez réessayer.';
+        } else if (error.code === 'auth/too-many-requests') {
+            errorMessage = '❌ Trop de tentatives. Veuillez réessayer plus tard.';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage = '❌ Format d\'email invalide. Veuillez vérifier votre saisie.';
+        } else if (error.code === 'auth/user-disabled') {
+            errorMessage = '❌ Ce compte a été désactivé. Veuillez contacter l\'administration.';
         } else {
-            showToast("❌ Erreur: " + error.message, "error");
+            errorMessage = '❌ Une erreur est survenue. Veuillez réessayer.';
         }
+
+        emailInput.classList.add('border-red-500', 'ring-red-500');
+        emailInput.classList.remove('border-gray-300');
+        emailError.classList.remove('hidden');
+        emailError.innerText = errorMessage;
+        
+        passwordInput.classList.add('border-red-500', 'ring-red-500');
+        passwordInput.classList.remove('border-gray-300');
+
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Se connecter';
@@ -777,7 +1028,6 @@ const confirmPasswordInput = document.getElementById('settings-confirm-password'
 const btnVerify = document.getElementById('btn-verify-password');
 const btnUpdate = document.getElementById('btn-update-pwd');
 
-// Étape 1 : Vérifier le mot de passe actuel
 btnVerify.addEventListener('click', async () => {
     const currentPwd = currentPasswordInput.value;
 
@@ -830,7 +1080,6 @@ btnVerify.addEventListener('click', async () => {
     }
 });
 
-// Étape 2 : Mettre à jour le mot de passe
 btnUpdate.addEventListener('click', async () => {
     const newPwd = newPasswordInput.value;
     const confirmPwd = confirmPasswordInput.value;
@@ -951,15 +1200,53 @@ document.getElementById('btn-toggle-eye').addEventListener('click', () => {
 });
 
 // ============================================================
-// DÉCONNEXION
+// DÉCONNEXION (avec confirmation)
 // ============================================================
-document.getElementById('btn-logout').addEventListener('click', async () => {
+const logoutModal = document.getElementById('logout-modal');
+const logoutConfirm = document.getElementById('logout-confirm');
+const logoutCancel = document.getElementById('logout-cancel');
+
+document.getElementById('btn-logout').addEventListener('click', (e) => {
+    e.preventDefault();
+    logoutModal.classList.remove('hidden');
+    logoutModal.classList.add('flex');
+    setTimeout(() => {
+        logoutModal.classList.remove('opacity-0');
+        logoutModal.querySelector('div').classList.remove('scale-95');
+    }, 10);
+});
+
+logoutCancel.addEventListener('click', () => {
+    logoutModal.classList.add('opacity-0');
+    logoutModal.querySelector('div').classList.add('scale-95');
+    setTimeout(() => {
+        logoutModal.classList.remove('flex');
+        logoutModal.classList.add('hidden');
+    }, 300);
+});
+
+logoutConfirm.addEventListener('click', async () => {
     try {
+        logoutModal.classList.add('opacity-0');
+        logoutModal.querySelector('div').classList.add('scale-95');
+        setTimeout(() => {
+            logoutModal.classList.remove('flex');
+            logoutModal.classList.add('hidden');
+        }, 300);
+        
         await signOut(auth);
+        dashboardCharge = false;
         showLogin();
-        showToast("✅ Déconnecté.", "success");
+        showToast("✅ Déconnecté avec succès.", "success");
     } catch (error) {
-        showToast("❌ Erreur déconnexion.", "error");
+        console.error("❌ Erreur déconnexion:", error);
+        showToast("❌ Erreur lors de la déconnexion.", "error");
+    }
+});
+
+logoutModal.addEventListener('click', (e) => {
+    if (e.target === logoutModal) {
+        logoutCancel.click();
     }
 });
 
@@ -980,6 +1267,7 @@ onAuthStateChanged(auth, (user) => {
         }
         showLogin();
     } else {
+        dashboardCharge = false;
         showLogin();
     }
 });
@@ -988,7 +1276,6 @@ onAuthStateChanged(auth, (user) => {
 // TOGGLES DES SECTIONS PARAMÈTRES
 // ============================================================
 
-// Fonction pour basculer une section
 function toggleSection(toggleId, contentId, arrowId) {
     const toggle = document.getElementById(toggleId);
     const content = document.getElementById(contentId);
@@ -1003,7 +1290,6 @@ function toggleSection(toggleId, contentId, arrowId) {
     }
 }
 
-// Initialiser tous les toggles
 toggleSection('theme-toggle', 'theme-content', 'theme-arrow');
 toggleSection('password-toggle', 'password-content', 'password-arrow');
 toggleSection('contact-toggle', 'contact-content', 'contact-arrow');

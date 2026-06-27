@@ -7,13 +7,15 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <!-- Librairie pour générer les PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body id="app-body" class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <!-- ====== TOAST ====== -->
+    <!-- ====== TOAST CONTAINER ====== -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full px-4"></div>
 
-    <!-- ====== MODAL ====== -->
+    <!-- ====== MODAL PERSONNALISÉE ====== -->
     <div id="custom-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-gray-100 p-6 text-center">
             <div id="modal-icon" class="mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4"></div>
@@ -22,6 +24,25 @@
             <button id="modal-btn-close" class="w-full py-2.5 rounded-xl text-sm font-bold text-white transition cursor-pointer bg-esp-blue hover:bg-blue-800">
                 D'accord
             </button>
+        </div>
+    </div>
+
+    <!-- ====== MODALE DE CONFIRMATION DÉCONNEXION ====== -->
+    <div id="logout-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-gray-100 p-6 text-center">
+            <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 bg-rose-100 text-rose-600 text-xl">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-950 mb-2">Confirmer la déconnexion</h3>
+            <p class="text-sm text-gray-500 mb-6">Voulez-vous vraiment vous déconnecter ? Vous devrez vous reconnecter pour accéder à votre espace.</p>
+            <div class="flex gap-3">
+                <button id="logout-confirm" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl text-sm transition cursor-pointer">
+                    Oui, se déconnecter
+                </button>
+                <button id="logout-cancel" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2.5 rounded-xl text-sm transition cursor-pointer">
+                    Annuler
+                </button>
+            </div>
         </div>
     </div>
 
@@ -194,6 +215,8 @@
                     <div>
                         <h3 id="student-name" class="text-lg font-bold text-gray-900">...</h3>
                         <p id="student-info" class="text-xs text-esp-blue font-semibold">...</p>
+                        <p id="last-login" class="text-[10px] text-gray-400 mt-1">🕐 Dernière connexion : --</p>
+                        <p id="email-status" class="text-[10px] mt-1 font-semibold">--</p>
                     </div>
                     <span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full">
                         <i class="fa-solid fa-circle text-[6px] mr-1"></i>Connecté
@@ -342,11 +365,16 @@
                         </div>
                         <div id="contact-content" class="hidden p-4 pt-0 space-y-3">
                             <p class="text-xs text-gray-400">Une question ? L'équipe administrative vous répondra dans les plus brefs délais.</p>
-                            <a href="mailto:votre.email@test.com" 
-                               class="flex items-center justify-center gap-2 w-full bg-esp-blue hover:bg-blue-800 text-white text-sm font-bold py-2.5 rounded-lg transition cursor-pointer">
-                                <i class="fa-solid fa-paper-plane"></i>
-                                Envoyer un email
-                            </a>
+                            <div class="space-y-2">
+                                <a href="mailto:esp@esp.sn" 
+                                   class="flex items-center justify-center gap-2 w-full bg-esp-blue hover:bg-blue-800 text-white text-sm font-bold py-2.5 rounded-lg transition cursor-pointer">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                    Envoyer un email
+                                </a>
+                                <p class="text-xs text-gray-400 text-center">
+                                    📞 <a href="tel:+221338240540" class="text-esp-blue hover:underline">+221 33 824 05 40</a>
+                                </p>
+                            </div>
                         </div>
                     </div>
 
