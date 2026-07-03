@@ -420,9 +420,16 @@ function afficherStatutEmail(user) {
 }
 
 // ============================================================
-// GÉNÉRATION DE REÇU PDF
+// GÉNÉRATION DE REÇU PDF (CORRIGÉE)
 // ============================================================
 function genererReçu(transaction) {
+    // Vérifier que la transaction est valide
+    if (!transaction || typeof transaction !== 'object') {
+        showToast("❌ Transaction invalide.", "error");
+        return;
+    }
+
+    // Vérifier que html2pdf est bien chargé
     if (typeof html2pdf === 'undefined') {
         showToast("❌ La librairie PDF n'est pas chargée. Veuillez rafraîchir la page.", "error");
         return;
@@ -430,7 +437,7 @@ function genererReçu(transaction) {
 
     const etudiantStr = localStorage.getItem('esp_pay_user');
     if (!etudiantStr) {
-        showToast("❌ Profil introuvable.", "error");
+        showToast("❌ Profil introuvable. Veuillez vous reconnecter.", "error");
         return;
     }
     
@@ -488,6 +495,7 @@ function genererReçu(transaction) {
         </div>
     `;
 
+    // Créer un élément temporaire
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = contenu;
     tempDiv.style.position = 'fixed';
@@ -498,24 +506,30 @@ function genererReçu(transaction) {
 
     const element = tempDiv.querySelector('#recu-content');
 
+    // Options du PDF
     const opt = {
         margin:        [10, 10, 10, 10],
         filename:     `Recu_${etudiant.prenom}_${etudiant.nom}_${transaction.id_transaction}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
+    // Afficher un toast de chargement
+    showToast("⏳ Génération du reçu en cours...", "info");
+
+    // Générer le PDF
     html2pdf().set(opt).from(element).save().then(() => {
         document.body.removeChild(tempDiv);
         showToast("✅ Reçu téléchargé avec succès !", "success");
     }).catch((error) => {
         document.body.removeChild(tempDiv);
         console.error("❌ Erreur génération PDF:", error);
-        showToast("❌ Erreur lors du téléchargement du reçu.", "error");
+        showToast("❌ Erreur lors du téléchargement du reçu. Veuillez réessayer.", "error");
     });
 }
 
+// Rendre la fonction accessible globalement pour le onclick
 window.genererReçu = genererReçu;
 
 // ============================================================
