@@ -6,6 +6,162 @@
 .text-esp-green { color: #55b748; }
 .border-esp-green { border-color: #55b748; }
 
+/* ============================================================
+   NOUVELLE PALETTE — inspirée de My Touchpoint
+   ============================================================ */
+.bg-esp-navy { background-color: #1c2a52; }
+.text-esp-navy { color: #1c2a52; }
+.border-esp-navy { border-color: #1c2a52; }
+
+.bg-esp-crimson { background-color: #9c1c3f; }
+.text-esp-crimson { color: #9c1c3f; }
+.border-esp-crimson { border-color: #9c1c3f; }
+
+/* Bouton d'action principal (CTA) — plein crimson */
+.btn-crimson {
+    background-color: #9c1c3f;
+    color: #ffffff;
+    transition: background-color 0.2s ease;
+}
+.btn-crimson:hover { background-color: #7d1730; }
+.btn-crimson:disabled { background-color: #c98a9c; cursor: not-allowed; }
+
+/* Bouton secondaire — contour navy */
+.btn-navy-outline {
+    background-color: transparent;
+    color: #1c2a52;
+    border: 2px solid #1c2a52;
+    transition: background-color 0.2s ease;
+}
+.btn-navy-outline:hover { background-color: #1c2a52; color: #ffffff; }
+
+/* Carte "montant déjà versé" (fond lavande, façon My Touchpoint) */
+.card-lavender {
+    background: linear-gradient(135deg, #f3eef8 0%, #ece7f5 100%);
+    border: 1px solid #e4dcef;
+}
+
+/* Carte QR / scan */
+.card-scan {
+    background: #ffffff;
+    border: 1px solid #eef0f5;
+}
+
+/* En-tête navy avec courbe décorative (façon My Touchpoint) */
+.header-navy-curve {
+    background-color: #1c2a52;
+    position: relative;
+    overflow: hidden;
+}
+.header-navy-curve::after {
+    content: "";
+    position: absolute;
+    top: -40%;
+    right: -20%;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+}
+.header-navy-curve::before {
+    content: "";
+    position: absolute;
+    top: -10%;
+    right: -10%;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Barre de navigation basse fixe (mobile-app style) */
+.bottom-nav {
+    position: sticky;
+    bottom: 0;
+    background: #ffffff;
+    border-top: 1px solid #eef0f5;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    z-index: 20;
+}
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    flex: 1;
+    padding: 4px 0;
+}
+.bottom-nav-item.active { color: #9c1c3f; }
+.bottom-nav-item i { font-size: 18px; }
+
+/* Petit trait "home indicator" façon iPhone (purement décoratif) */
+.home-indicator {
+    width: 130px;
+    height: 4px;
+    border-radius: 4px;
+    background: #1c2a52;
+    margin: 8px auto 2px;
+}
+
+/* Avatar rond générique */
+.avatar-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #e7e2f2;
+    color: #1c2a52;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+/* Pastilles opérateur (Wave / Orange Money) sélectionnables */
+.operator-pill {
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: #1c2a52;
+}
+.operator-pill.selected {
+    border-color: #9c1c3f;
+    background: #fdf1f4;
+    color: #9c1c3f;
+}
+
+/* Dark mode pour les nouveaux composants */
+.dark-mode .card-lavender {
+    background: linear-gradient(135deg, #241f33 0%, #201c2c 100%);
+    border-color: #322b45;
+}
+.dark-mode .card-scan {
+    background: #1e293b;
+    border-color: #334155;
+}
+.dark-mode .bottom-nav {
+    background: #0f172a;
+    border-top-color: #1e293b;
+}
+.dark-mode .bottom-nav-item { color: #64748b; }
+.dark-mode .bottom-nav-item.active { color: #f472b6; }
+.dark-mode .operator-pill { border-color: #334155; color: #e2e8f0; }
+.dark-mode .operator-pill.selected { border-color: #f472b6; background: #3b1526; color: #f9a8c9; }
+.dark-mode .avatar-circle { background: #334155; color: #cbd5e1; }
+.dark-mode .home-indicator { background: #475569; }
+
 /* Scroll personnalisé pour l'historique */
 #transactions-list::-webkit-scrollbar {
     width: 4px;

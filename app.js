@@ -6,11 +6,12 @@ import {
     sendEmailVerification, 
     signOut,
     updatePassword,
+    deleteUser,
     onAuthStateChanged,
     reauthenticateWithCredential,
     EmailAuthProvider
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
+ 
 // ============================================================
 // CONFIGURATION FIREBASE
 // ============================================================
@@ -22,10 +23,10 @@ const firebaseConfig = {
     messagingSenderId: "629871793149",
     appId: "1:629871793149:web:7522b73742d4d15187bf94"
 };
-
+ 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-
+ 
 // ============================================================
 // STRUCTURES ESP
 // ============================================================
@@ -61,71 +62,74 @@ const structuresESP = {
         } 
     }
 };
-
+ 
 // ============================================================
 // RÉFÉRENCES DOM
 // ============================================================
-const tabsContainer = document.getElementById('tabs-container');
+const authWrapper = document.getElementById('auth-wrapper');
 const loginSection = document.getElementById('login-section');
 const registerSection = document.getElementById('register-section');
 const dashboardSection = document.getElementById('dashboard-section');
-
+ 
 const sectionHome = document.getElementById('section-home');
 const sectionHistory = document.getElementById('section-history');
-const sectionSettings = document.getElementById('section-settings');
-
+const sectionSettings = document.getElementById('section-account');
+ 
 const navHome = document.getElementById('nav-home');
 const navHistory = document.getElementById('nav-history');
-const navSettings = document.getElementById('nav-settings');
-
+const navSettings = document.getElementById('nav-account');
+ 
+const dashboardHeaderTitle = document.getElementById('dashboard-header-title');
+ 
 // ============================================================
-// ONGLETS
+// ONGLETS AUTHENTIFICATION
 // ============================================================
 const tabLogin = document.getElementById('tab-login');
 const tabRegister = document.getElementById('tab-register');
-
+ 
 function showLogin() {
-    tabLogin.className = "w-1/2 pb-3 font-bold text-esp-blue border-b-2 border-esp-blue text-center cursor-pointer transition";
-    tabRegister.className = "w-1/2 pb-3 font-medium text-gray-400 text-center cursor-pointer transition hover:text-gray-600";
+    authWrapper.classList.remove('hidden');
+    dashboardSection.classList.add('hidden');
     loginSection.classList.remove('hidden');
     registerSection.classList.add('hidden');
-    dashboardSection.classList.add('hidden');
 }
-
+ 
 function showRegister() {
-    tabRegister.className = "w-1/2 pb-3 font-bold text-esp-blue border-b-2 border-esp-blue text-center cursor-pointer transition";
-    tabLogin.className = "w-1/2 pb-3 font-medium text-gray-400 text-center cursor-pointer transition hover:text-gray-600";
+    authWrapper.classList.remove('hidden');
+    dashboardSection.classList.add('hidden');
     registerSection.classList.remove('hidden');
     loginSection.classList.add('hidden');
-    dashboardSection.classList.add('hidden');
 }
-
+ 
 function showDashboard() {
-    tabsContainer.classList.add('hidden');
-    loginSection.classList.add('hidden');
-    registerSection.classList.add('hidden');
+    authWrapper.classList.add('hidden');
     dashboardSection.classList.remove('hidden');
 }
-
+ 
 tabLogin.addEventListener('click', showLogin);
 tabRegister.addEventListener('click', showRegister);
-
+ 
 // ============================================================
 // NAVIGATION DASHBOARD (3 onglets)
 // ============================================================
-function switchTab(activeSection, activeBtn) {
+const titresOnglets = {
+    home: 'Accueil',
+    history: 'Historiques',
+    account: 'Mon Compte'
+};
+ 
+function switchTab(activeSection, activeBtn, titre) {
     [sectionHome, sectionHistory, sectionSettings].forEach(s => s.classList.add('hidden'));
-    [navHome, navHistory, navSettings].forEach(b => {
-        b.className = "flex flex-col items-center gap-1 font-medium text-gray-400 cursor-pointer hover:text-gray-600";
-    });
+    [navHome, navHistory, navSettings].forEach(b => b.classList.remove('active'));
     activeSection.classList.remove('hidden');
-    activeBtn.className = "flex flex-col items-center gap-1 font-bold text-esp-blue cursor-pointer";
+    activeBtn.classList.add('active');
+    if (dashboardHeaderTitle && titre) dashboardHeaderTitle.innerText = titre;
 }
-
-navHome.addEventListener('click', () => switchTab(sectionHome, navHome));
-navHistory.addEventListener('click', () => switchTab(sectionHistory, navHistory));
-navSettings.addEventListener('click', () => switchTab(sectionSettings, navSettings));
-
+ 
+navHome.addEventListener('click', () => switchTab(sectionHome, navHome, titresOnglets.home));
+navHistory.addEventListener('click', () => switchTab(sectionHistory, navHistory, titresOnglets.history));
+navSettings.addEventListener('click', () => switchTab(sectionSettings, navSettings, titresOnglets.account));
+ 
 // ============================================================
 // DYNAMIQUE DES OPTIONS
 // ============================================================
@@ -134,13 +138,13 @@ const regNiveau = document.getElementById('reg-niveau');
 const regOption = document.getElementById('reg-option');
 const labelDocument = document.getElementById('label-document');
 const helpDocument = document.getElementById('help-document');
-
+ 
 regCycle.addEventListener('change', () => {
     const cycle = regCycle.value;
     regNiveau.innerHTML = '<option value="">-- Choisir la classe --</option>';
     regOption.innerHTML = '<option value="">Sélectionnez d\'abord le niveau</option>';
     regOption.disabled = true;
-
+ 
     if (cycle && structuresESP[cycle]) {
         regNiveau.disabled = false;
         structuresESP[cycle].niveaux.forEach(niv => {
@@ -153,12 +157,12 @@ regCycle.addEventListener('change', () => {
         regNiveau.disabled = true;
     }
 });
-
+ 
 regNiveau.addEventListener('change', () => {
     const cycle = regCycle.value;
     const niveau = regNiveau.value;
     regOption.innerHTML = '<option value="">-- Choisir l\'option --</option>';
-
+ 
     if (cycle && niveau && structuresESP[cycle].options[niveau]) {
         regOption.disabled = false;
         structuresESP[cycle].options[niveau].forEach(opt => {
@@ -170,7 +174,7 @@ regNiveau.addEventListener('change', () => {
     } else {
         regOption.disabled = true;
     }
-
+ 
     const estPremiereAnnee = (niveau === "DUT 1" || niveau === "Licence 1" || niveau === "DIC 1");
     if (estPremiereAnnee) {
         labelDocument.innerText = "Numéro de Carte d'Identité (CNI)";
@@ -180,7 +184,7 @@ regNiveau.addEventListener('change', () => {
         helpDocument.innerText = "Champs requis pour la vérification administrative.";
     }
 });
-
+ 
 // ============================================================
 // TOASTS PERSONNALISÉS
 // ============================================================
@@ -209,9 +213,9 @@ function showToast(message, type = 'success', duration = 4000) {
             class: 'toast-warning'
         }
     };
-
+ 
     const typeConfig = types[type] || types.info;
-
+ 
     const toast = document.createElement('div');
     toast.className = `toast-item ${typeConfig.class}`;
     
@@ -228,22 +232,22 @@ function showToast(message, type = 'success', duration = 4000) {
         </button>
         <div class="toast-progress"></div>
     `;
-
+ 
     container.appendChild(toast);
-
+ 
     requestAnimationFrame(() => {
         toast.classList.add('show');
     });
-
+ 
     const closeBtn = toast.querySelector('.toast-close');
     closeBtn.addEventListener('click', () => {
         removeToast(toast);
     });
-
+ 
     let timeoutId = setTimeout(() => {
         removeToast(toast);
     }, duration);
-
+ 
     toast.addEventListener('mouseenter', () => {
         clearTimeout(timeoutId);
         const progress = toast.querySelector('.toast-progress');
@@ -251,7 +255,7 @@ function showToast(message, type = 'success', duration = 4000) {
             progress.style.animationPlayState = 'paused';
         }
     });
-
+ 
     toast.addEventListener('mouseleave', () => {
         const progress = toast.querySelector('.toast-progress');
         if (progress) {
@@ -261,10 +265,10 @@ function showToast(message, type = 'success', duration = 4000) {
             removeToast(toast);
         }, 1500);
     });
-
+ 
     return toast;
 }
-
+ 
 function removeToast(toast) {
     if (toast.classList.contains('hide')) return;
     toast.classList.remove('show');
@@ -275,7 +279,7 @@ function removeToast(toast) {
         }
     }, 400);
 }
-
+ 
 // ============================================================
 // MODAL
 // ============================================================
@@ -290,7 +294,7 @@ function showModal(title, message, type = 'success') {
     if (type === 'success') {
         iconContainer.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 bg-emerald-100 text-emerald-600 text-xl";
         iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
-        btnClose.className = "w-full bg-esp-blue hover:bg-blue-800 py-2.5 rounded-xl text-sm font-bold text-white transition cursor-pointer";
+        btnClose.className = "w-full btn-crimson py-2.5 rounded-xl text-sm font-bold text-white transition cursor-pointer";
     } else {
         iconContainer.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 bg-rose-100 text-rose-600 text-xl";
         iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
@@ -313,7 +317,7 @@ function showModal(title, message, type = 'success') {
         }, 300);
     };
 }
-
+ 
 // ============================================================
 // VALIDATION EN DIRECT
 // ============================================================
@@ -322,7 +326,7 @@ function setFieldError(inputId, errorId, condition) {
     const error = document.getElementById(errorId);
     
     if (!input || !error) return;
-
+ 
     const check = () => {
         const value = input.value.trim();
         if (condition(value)) {
@@ -335,17 +339,17 @@ function setFieldError(inputId, errorId, condition) {
             error.classList.add('hidden');
         }
     };
-
+ 
     input.addEventListener('input', check);
     return check;
 }
-
+ 
 // ============================================================
 // VALIDATIONS EN DIRECT - FORMULAIRE DE CONNEXION
 // ============================================================
 setFieldError('login-email', 'login-email-error', (v) => v.length > 0 && !v.endsWith('@esp.sn') && !v.endsWith('@ucad.edu.sn'));
 setFieldError('login-password', 'login-password-error', (v) => v.length > 0 && v.length < 6);
-
+ 
 // ============================================================
 // VALIDATIONS EN DIRECT - FORMULAIRE D'INSCRIPTION
 // ============================================================
@@ -354,12 +358,12 @@ setFieldError('reg-nom', 'reg-nom-error', (v) => v.length === 0);
 setFieldError('reg-document', 'reg-document-error', (v) => v.length === 0);
 setFieldError('reg-email', 'reg-email-error', (v) => v.length > 0 && !v.endsWith('@esp.sn') && !v.endsWith('@ucad.edu.sn'));
 setFieldError('reg-password', 'reg-password-error', (v) => v.length > 0 && v.length < 6);
-
+ 
 // Confirmation mot de passe (spécial)
 const regPassword = document.getElementById('reg-password');
 const regPasswordConfirm = document.getElementById('reg-password-confirm');
 const regPasswordConfirmError = document.getElementById('reg-password-confirm-error');
-
+ 
 function checkPasswordConfirm() {
     const pwd = regPassword.value;
     const confirm = regPasswordConfirm.value;
@@ -373,17 +377,17 @@ function checkPasswordConfirm() {
         regPasswordConfirmError.classList.add('hidden');
     }
 }
-
+ 
 regPassword.addEventListener('input', checkPasswordConfirm);
 regPasswordConfirm.addEventListener('input', checkPasswordConfirm);
-
+ 
 // ============================================================
 // VARIABLES GLOBALES
 // ============================================================
 let montantReelGlobal = 0;
 let soldeMasque = false;
 let dashboardCharge = false;
-
+ 
 // ============================================================
 // DATE DE DERNIÈRE CONNEXION
 // ============================================================
@@ -400,11 +404,22 @@ function mettreAJourDateConnexion() {
     localStorage.setItem('esp_pay_last_login', dateFormatee);
     return dateFormatee;
 }
-
+ 
 function getDateDerniereConnexion() {
     return localStorage.getItem('esp_pay_last_login') || 'Première connexion';
 }
-
+ 
+// ============================================================
+// HORODATAGE DU SOLDE
+// ============================================================
+function mettreAJourHoraireSolde() {
+    const el = document.getElementById('solde-updated-at');
+    if (!el) return;
+    const now = new Date();
+    const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+    el.innerText = `Mis à jour le ${now.toLocaleString('fr-FR', options)}`;
+}
+ 
 // ============================================================
 // ÉTAT DE VÉRIFICATION EMAIL
 // ============================================================
@@ -418,7 +433,7 @@ function afficherStatutEmail(user) {
         emailStatusElement.innerHTML = '❌ <span class="text-red-600">Email non vérifié</span>';
     }
 }
-
+ 
 // ============================================================
 // GÉNÉRATION DE REÇU PDF (CORRIGÉE)
 // ============================================================
@@ -428,13 +443,13 @@ function genererReçu(transaction) {
         showToast("❌ Transaction invalide.", "error");
         return;
     }
-
+ 
     // Vérifier que html2pdf est bien chargé
     if (typeof html2pdf === 'undefined') {
         showToast("❌ La librairie PDF n'est pas chargée. Veuillez rafraîchir la page.", "error");
         return;
     }
-
+ 
     const etudiantStr = localStorage.getItem('esp_pay_user');
     if (!etudiantStr) {
         showToast("❌ Profil introuvable. Veuillez vous reconnecter.", "error");
@@ -473,6 +488,11 @@ function genererReçu(transaction) {
                         <td style="padding: 8px 0; color: #475569; border-top: 1px solid #e2e8f0;"><strong>Opérateur</strong></td>
                         <td style="padding: 8px 0; text-align: right; border-top: 1px solid #e2e8f0;">${transaction.operateur}</td>
                     </tr>
+                    ${transaction.code_marchand ? `
+                    <tr>
+                        <td style="padding: 8px 0; color: #475569; border-top: 1px solid #e2e8f0;"><strong>Code marchand</strong></td>
+                        <td style="padding: 8px 0; text-align: right; border-top: 1px solid #e2e8f0; font-size: 12px;">${transaction.code_marchand}</td>
+                    </tr>` : ''}
                     <tr>
                         <td style="padding: 8px 0; color: #475569; border-top: 1px solid #e2e8f0;"><strong>Date</strong></td>
                         <td style="padding: 8px 0; text-align: right; border-top: 1px solid #e2e8f0;">${transaction.date}</td>
@@ -494,7 +514,7 @@ function genererReçu(transaction) {
             </div>
         </div>
     `;
-
+ 
     // Créer un élément temporaire
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = contenu;
@@ -503,9 +523,9 @@ function genererReçu(transaction) {
     tempDiv.style.top = '0';
     tempDiv.style.zIndex = '9999';
     document.body.appendChild(tempDiv);
-
+ 
     const element = tempDiv.querySelector('#recu-content');
-
+ 
     // Options du PDF
     const opt = {
         margin:        [10, 10, 10, 10],
@@ -514,10 +534,10 @@ function genererReçu(transaction) {
         html2canvas:  { scale: 2, useCORS: true, logging: false },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-
+ 
     // Afficher un toast de chargement
     showToast("⏳ Génération du reçu en cours...", "info");
-
+ 
     // Générer le PDF
     html2pdf().set(opt).from(element).save().then(() => {
         document.body.removeChild(tempDiv);
@@ -528,26 +548,127 @@ function genererReçu(transaction) {
         showToast("❌ Erreur lors du téléchargement du reçu. Veuillez réessayer.", "error");
     });
 }
-
+ 
 // Rendre la fonction accessible globalement pour le onclick
 window.genererReçu = genererReçu;
-
+ 
 // ============================================================
 // HISTORIQUE
 // ============================================================
+let transactionsGlobal = [];
+ 
 function genererHistorique(transactions) {
+    transactionsGlobal = transactions || [];
+    afficherTransactionsFiltrees();
+}
+ 
+// Récupère un objet Date fiable pour une transaction :
+// utilise le timestamp s'il existe (nouvelles transactions),
+// sinon parse la chaîne "date" au format fr-FR (anciennes transactions).
+function getDateTransaction(t) {
+    if (t.timestamp) return new Date(t.timestamp);
+    if (t.date) {
+        const [datePart, timePart] = t.date.split(' ');
+        if (datePart && datePart.includes('/')) {
+            const [j, m, a] = datePart.split('/');
+            return new Date(`${a}-${m}-${j}T${timePart || '00:00:00'}`);
+        }
+    }
+    return new Date(0);
+}
+ 
+function filtrerTransactions(transactions) {
+    const operateurEl = document.getElementById('filter-operateur');
+    const periodeEl = document.getElementById('filter-periode');
+    const minEl = document.getElementById('filter-montant-min');
+    const maxEl = document.getElementById('filter-montant-max');
+    const searchEl = document.getElementById('history-search');
+ 
+    const operateur = operateurEl ? operateurEl.value : 'tous';
+    const periode = periodeEl ? periodeEl.value : 'tous';
+    const min = minEl && minEl.value !== '' ? parseFloat(minEl.value) : 0;
+    const max = maxEl && maxEl.value !== '' ? parseFloat(maxEl.value) : Infinity;
+    const recherche = searchEl ? searchEl.value.trim().toLowerCase() : '';
+ 
+    const maintenant = new Date();
+ 
+    return transactions.filter(t => {
+        if (operateur !== 'tous' && t.operateur !== operateur) return false;
+        if (t.montant < min || t.montant > max) return false;
+ 
+        if (recherche) {
+            const cible = `${t.id_transaction || ''} ${t.operateur || ''} ${t.code_marchand || ''}`.toLowerCase();
+            if (!cible.includes(recherche)) return false;
+        }
+ 
+        if (periode !== 'tous') {
+            const dateT = getDateTransaction(t);
+            if (periode === 'aujourdhui') {
+                if (dateT.toDateString() !== maintenant.toDateString()) return false;
+            } else if (periode === 'semaine') {
+                const jourSemaine = maintenant.getDay(); // 0 = dimanche
+                const decalage = jourSemaine === 0 ? 6 : jourSemaine - 1;
+                const debutSemaine = new Date(maintenant);
+                debutSemaine.setDate(maintenant.getDate() - decalage);
+                debutSemaine.setHours(0, 0, 0, 0);
+                if (dateT < debutSemaine) return false;
+            } else if (periode === 'mois') {
+                if (dateT.getMonth() !== maintenant.getMonth() || dateT.getFullYear() !== maintenant.getFullYear()) return false;
+            }
+        }
+        return true;
+    });
+}
+ 
+function compterFiltresActifs() {
+    let count = 0;
+    const operateurEl = document.getElementById('filter-operateur');
+    const periodeEl = document.getElementById('filter-periode');
+    const minEl = document.getElementById('filter-montant-min');
+    const maxEl = document.getElementById('filter-montant-max');
+ 
+    if (operateurEl && operateurEl.value !== 'tous') count++;
+    if (periodeEl && periodeEl.value !== 'tous') count++;
+    if (minEl && minEl.value !== '') count++;
+    if (maxEl && maxEl.value !== '') count++;
+    return count;
+}
+ 
+function mettreAJourBadgeFiltres() {
+    const badge = document.getElementById('filter-badge');
+    if (!badge) return;
+    const count = compterFiltresActifs();
+    if (count > 0) {
+        badge.textContent = count;
+        badge.classList.remove('hidden');
+        badge.classList.add('flex');
+    } else {
+        badge.classList.add('hidden');
+        badge.classList.remove('flex');
+    }
+}
+ 
+function afficherTransactionsFiltrees() {
     const container = document.getElementById('transactions-list');
-    if (!transactions || transactions.length === 0) {
+    if (!container) return;
+ 
+    const transactionsFiltrees = filtrerTransactions(transactionsGlobal);
+    mettreAJourBadgeFiltres();
+ 
+    if (!transactionsFiltrees || transactionsFiltrees.length === 0) {
+        const searchEl = document.getElementById('history-search');
+        const rechercheActive = searchEl && searchEl.value.trim() !== '';
+        const aucunResultatFiltre = transactionsGlobal.length > 0 && (compterFiltresActifs() > 0 || rechercheActive);
         container.innerHTML = `
             <div class="text-center py-8">
                 <i class="fa-solid fa-receipt text-gray-300 text-4xl mb-3"></i>
-                <p class="text-xs text-gray-400">Aucune transaction effectuée.</p>
+                <p class="text-xs text-gray-400">${aucunResultatFiltre ? "Aucune transaction ne correspond à ces filtres." : "Aucune transaction effectuée."}</p>
             </div>
         `;
         return;
     }
     container.innerHTML = "";
-    [...transactions].reverse().forEach(t => {
+    [...transactionsFiltrees].reverse().forEach(t => {
         const item = document.createElement('div');
         item.className = "flex justify-between items-center p-3 bg-gray-50 border border-gray-100 rounded-xl text-xs";
         item.innerHTML = `
@@ -565,7 +686,7 @@ function genererHistorique(transactions) {
                 <p class="font-black text-emerald-700">+ ${t.montant.toLocaleString()} F</p>
                 <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">Réussi</span>
                 <button onclick="genererReçu(${JSON.stringify(t).replace(/"/g, '&quot;')})" 
-                        class="text-[10px] bg-esp-blue hover:bg-blue-800 text-white px-2 py-0.5 rounded font-medium transition cursor-pointer">
+                        class="text-[10px] bg-esp-navy hover:bg-blue-900 text-white px-2 py-0.5 rounded font-medium transition cursor-pointer">
                     <i class="fa-solid fa-download mr-1"></i>Reçu
                 </button>
             </div>
@@ -573,10 +694,59 @@ function genererHistorique(transactions) {
         container.appendChild(item);
     });
 }
-
+ 
+// ============================================================
+// FILTRES HISTORIQUE — écouteurs
+// ============================================================
+const filterToggle = document.getElementById('filter-toggle');
+const filterPanel = document.getElementById('filter-panel');
+ 
+if (filterToggle && filterPanel) {
+    filterToggle.addEventListener('click', () => {
+        filterPanel.classList.toggle('hidden');
+    });
+}
+ 
+['filter-operateur', 'filter-periode', 'filter-montant-min', 'filter-montant-max', 'history-search'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', afficherTransactionsFiltrees);
+});
+ 
+const filterReset = document.getElementById('filter-reset');
+if (filterReset) {
+    filterReset.addEventListener('click', () => {
+        document.getElementById('filter-operateur').value = 'tous';
+        document.getElementById('filter-periode').value = 'tous';
+        document.getElementById('filter-montant-min').value = '';
+        document.getElementById('filter-montant-max').value = '';
+        afficherTransactionsFiltrees();
+        showToast("🔄 Filtres réinitialisés.", "success");
+    });
+}
+ 
 // ============================================================
 // CHARGEMENT DU DASHBOARD
 // ============================================================
+function remplirInfosEtudiant(etudiant) {
+    const nomComplet = `${etudiant.prenom} ${etudiant.nom}`;
+    const classe = `${etudiant.niveau || ''}${etudiant.option ? ' - ' + etudiant.option : ''}`;
+    const carte = `${etudiant.identifiant_type} : ${etudiant.identifiant_valeur}`;
+ 
+    const profileName = document.getElementById('profile-name');
+    const profileMeta = document.getElementById('profile-meta');
+    const profileCarte = document.getElementById('profile-carte');
+    if (profileName) profileName.innerText = nomComplet;
+    if (profileMeta) profileMeta.innerText = classe;
+    if (profileCarte) profileCarte.innerText = carte;
+ 
+    const paymentName = document.getElementById('payment-student-name');
+    const paymentMeta = document.getElementById('payment-student-meta');
+    const paymentCarte = document.getElementById('payment-student-carte');
+    if (paymentName) paymentName.innerText = nomComplet;
+    if (paymentMeta) paymentMeta.innerText = classe;
+    if (paymentCarte) paymentCarte.innerText = carte;
+}
+ 
 function chargerDashboard(etudiant) {
     if (dashboardCharge) {
         console.log("🔄 Dashboard déjà chargé, ignore.");
@@ -589,8 +759,7 @@ function chargerDashboard(etudiant) {
     // Mettre à jour la date de dernière connexion
     const derniereConnexion = mettreAJourDateConnexion();
     
-    document.getElementById('student-name').innerText = `${etudiant.prenom} ${etudiant.nom}`;
-    document.getElementById('student-info').innerText = `${etudiant.identifiant_type} : ${etudiant.identifiant_valeur}`;
+    remplirInfosEtudiant(etudiant);
     
     // Afficher la date de dernière connexion
     const lastLoginElement = document.getElementById('last-login');
@@ -607,7 +776,7 @@ function chargerDashboard(etudiant) {
     const soldeCard = document.getElementById('solde-card');
     const formPaiement = document.getElementById('form-paiement-box');
     const msgPublic = document.getElementById('msg-public-scolarite');
-
+ 
     if (etudiant.cycle === "DUT" || etudiant.cycle === "DIC") {
         soldeCard.classList.add('hidden');
         formPaiement.classList.add('hidden');
@@ -619,48 +788,49 @@ function chargerDashboard(etudiant) {
         if (!soldeMasque) {
             document.getElementById('solde-affiche').innerHTML = `${montantReelGlobal.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
         }
+        mettreAJourHoraireSolde();
         genererHistorique(etudiant.transactions || []);
     }
     
     showDashboard();
     showToast(`👋 Bienvenue ${etudiant.prenom} !`, 'success');
 }
-
+ 
 // ============================================================
 // THÈME (Clair / Sombre)
 // ============================================================
 const themeLight = document.getElementById('theme-light');
 const themeDark = document.getElementById('theme-dark');
-
+ 
 if (localStorage.getItem('esp_pay_theme') === 'dark') {
     document.getElementById('app-body').classList.add('dark-mode');
-    themeDark.className = "flex-1 py-2 px-4 rounded-xl border-2 border-esp-blue bg-esp-blue text-white text-sm font-bold transition cursor-pointer";
+    themeDark.className = "flex-1 py-2 px-4 rounded-xl border-2 border-esp-navy bg-esp-navy text-white text-sm font-bold transition cursor-pointer";
     themeLight.className = "flex-1 py-2 px-4 rounded-xl border-2 border-gray-300 bg-white text-gray-700 text-sm font-medium transition cursor-pointer hover:border-gray-400";
 } else {
-    themeLight.className = "flex-1 py-2 px-4 rounded-xl border-2 border-esp-blue bg-esp-blue text-white text-sm font-bold transition cursor-pointer";
+    themeLight.className = "flex-1 py-2 px-4 rounded-xl border-2 border-esp-navy bg-esp-navy text-white text-sm font-bold transition cursor-pointer";
     themeDark.className = "flex-1 py-2 px-4 rounded-xl border-2 border-gray-300 bg-white text-gray-700 text-sm font-medium transition cursor-pointer hover:border-gray-400";
 }
-
+ 
 themeLight.addEventListener('click', () => {
     document.getElementById('app-body').classList.remove('dark-mode');
     localStorage.setItem('esp_pay_theme', 'light');
-    themeLight.className = "flex-1 py-2 px-4 rounded-xl border-2 border-esp-blue bg-esp-blue text-white text-sm font-bold transition cursor-pointer";
+    themeLight.className = "flex-1 py-2 px-4 rounded-xl border-2 border-esp-navy bg-esp-navy text-white text-sm font-bold transition cursor-pointer";
     themeDark.className = "flex-1 py-2 px-4 rounded-xl border-2 border-gray-300 bg-white text-gray-700 text-sm font-medium transition cursor-pointer hover:border-gray-400";
 });
-
+ 
 themeDark.addEventListener('click', () => {
     document.getElementById('app-body').classList.add('dark-mode');
     localStorage.setItem('esp_pay_theme', 'dark');
-    themeDark.className = "flex-1 py-2 px-4 rounded-xl border-2 border-esp-blue bg-esp-blue text-white text-sm font-bold transition cursor-pointer";
+    themeDark.className = "flex-1 py-2 px-4 rounded-xl border-2 border-esp-navy bg-esp-navy text-white text-sm font-bold transition cursor-pointer";
     themeLight.className = "flex-1 py-2 px-4 rounded-xl border-2 border-gray-300 bg-white text-gray-700 text-sm font-medium transition cursor-pointer hover:border-gray-400";
 });
-
+ 
 // ============================================================
 // INSCRIPTION
 // ============================================================
 document.getElementById('register-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-
+ 
     const prenom = document.getElementById('reg-prenom').value.trim();
     const nom = document.getElementById('reg-nom').value.trim();
     const cycle = regCycle.value;
@@ -671,58 +841,58 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const email = document.getElementById('reg-email').value.trim().toLowerCase();
     const password = document.getElementById('reg-password').value;
     const confirm = document.getElementById('reg-password-confirm').value;
-
+ 
     let hasError = false;
-
+ 
     if (!prenom) {
         document.getElementById('reg-prenom').classList.add('border-red-500', 'ring-red-500');
         document.getElementById('reg-prenom').classList.remove('border-gray-300');
         document.getElementById('reg-prenom-error').classList.remove('hidden');
         hasError = true;
     }
-
+ 
     if (!nom) {
         document.getElementById('reg-nom').classList.add('border-red-500', 'ring-red-500');
         document.getElementById('reg-nom').classList.remove('border-gray-300');
         document.getElementById('reg-nom-error').classList.remove('hidden');
         hasError = true;
     }
-
+ 
     if (!cycle) {
         document.getElementById('reg-cycle').classList.add('border-red-500', 'ring-red-500');
         document.getElementById('reg-cycle').classList.remove('border-gray-300');
         document.getElementById('reg-cycle-error').classList.remove('hidden');
         hasError = true;
     }
-
+ 
     if (!niveau) {
         document.getElementById('reg-niveau').classList.add('border-red-500', 'ring-red-500');
         document.getElementById('reg-niveau').classList.remove('border-gray-300');
         document.getElementById('reg-niveau-error').classList.remove('hidden');
         hasError = true;
     }
-
+ 
     if (!option) {
         document.getElementById('reg-option').classList.add('border-red-500', 'ring-red-500');
         document.getElementById('reg-option').classList.remove('border-gray-300');
         document.getElementById('reg-option-error').classList.remove('hidden');
         hasError = true;
     }
-
+ 
     if (!docValue) {
         document.getElementById('reg-document').classList.add('border-red-500', 'ring-red-500');
         document.getElementById('reg-document').classList.remove('border-gray-300');
         document.getElementById('reg-document-error').classList.remove('hidden');
         hasError = true;
     }
-
+ 
     if (!photo) {
         document.getElementById('reg-photo').classList.add('border-red-500', 'ring-red-500');
         document.getElementById('reg-photo').classList.remove('border-gray-300');
         document.getElementById('reg-photo-error').classList.remove('hidden');
         hasError = true;
     }
-
+ 
     if (!email) {
         document.getElementById('reg-email').classList.add('border-red-500', 'ring-red-500');
         document.getElementById('reg-email').classList.remove('border-gray-300');
@@ -734,7 +904,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         document.getElementById('reg-email-error').classList.remove('hidden');
         hasError = true;
     }
-
+ 
     if (!password) {
         document.getElementById('reg-password').classList.add('border-red-500', 'ring-red-500');
         document.getElementById('reg-password').classList.remove('border-gray-300');
@@ -746,7 +916,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         document.getElementById('reg-password-error').classList.remove('hidden');
         hasError = true;
     }
-
+ 
     if (!confirm) {
         document.getElementById('reg-password-confirm').classList.add('border-red-500', 'ring-red-500');
         document.getElementById('reg-password-confirm').classList.remove('border-gray-300');
@@ -758,21 +928,21 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         document.getElementById('reg-password-confirm-error').classList.remove('hidden');
         hasError = true;
     }
-
+ 
     if (hasError) {
         showToast("Veuillez corriger les champs en rouge.", "error");
         return;
     }
-
+ 
     const btn = document.getElementById('btn-register');
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Inscription...';
-
+ 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         await sendEmailVerification(user);
-
+ 
         const estPremiereAnnee = (niveau === "DUT 1" || niveau === "Licence 1" || niveau === "DIC 1");
         const etudiantData = {
             prenom, nom, cycle, niveau, option, email,
@@ -783,9 +953,9 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
             montant_deja_paye: 0,
             transactions: []
         };
-
+ 
         localStorage.setItem('esp_pay_user', JSON.stringify(etudiantData));
-
+ 
         showModal(
             "📧 Vérification email requise",
             `Un email de confirmation a été envoyé à :<br><strong>${email}</strong><br><br>
@@ -793,7 +963,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
             🔐 Une fois votre email confirmé, vous pourrez vous connecter.`,
             "success"
         );
-
+ 
         document.getElementById('reg-prenom').value = "";
         document.getElementById('reg-nom').value = "";
         document.getElementById('reg-email').value = "";
@@ -806,15 +976,15 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         regNiveau.disabled = true;
         regOption.innerHTML = '<option value="">Sélectionnez d\'abord la classe</option>';
         regOption.disabled = true;
-
+ 
         document.querySelectorAll('#register-form input, #register-form select').forEach(el => {
             el.classList.remove('border-red-500', 'ring-red-500');
             el.classList.add('border-gray-300');
         });
         document.querySelectorAll('#register-form .text-red-600').forEach(el => el.classList.add('hidden'));
-
+ 
         showLogin();
-
+ 
     } catch (error) {
         console.error("❌ Erreur:", error);
         if (error.code === 'auth/email-already-in-use') {
@@ -827,13 +997,13 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         btn.innerHTML = '<i class="fa-solid fa-lock"></i> Créer mon compte';
     }
 });
-
+ 
 // ============================================================
 // CONNEXION
 // ============================================================
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-
+ 
     const emailInput = document.getElementById('login-email');
     const passwordInput = document.getElementById('login-password');
     const emailError = document.getElementById('login-email-error');
@@ -841,7 +1011,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     
     const email = emailInput.value.trim().toLowerCase();
     const password = passwordInput.value;
-
+ 
     emailInput.classList.remove('border-red-500', 'ring-red-500');
     emailInput.classList.add('border-gray-300');
     emailError.classList.add('hidden');
@@ -850,9 +1020,9 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     passwordInput.classList.add('border-gray-300');
     passwordError.classList.add('hidden');
     passwordError.innerText = '';
-
+ 
     let hasError = false;
-
+ 
     if (!email) {
         emailInput.classList.add('border-red-500', 'ring-red-500');
         emailInput.classList.remove('border-gray-300');
@@ -866,7 +1036,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         emailError.innerText = 'Veuillez utiliser votre email @esp.sn ou @ucad.edu.sn.';
         hasError = true;
     }
-
+ 
     if (!password) {
         passwordInput.classList.add('border-red-500', 'ring-red-500');
         passwordInput.classList.remove('border-gray-300');
@@ -880,19 +1050,19 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         passwordError.innerText = 'Le mot de passe doit contenir au moins 6 caractères.';
         hasError = true;
     }
-
+ 
     if (hasError) {
         return;
     }
-
+ 
     const btn = document.getElementById('btn-login');
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Connexion...';
-
+ 
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-
+ 
         if (!user.emailVerified) {
             showModal(
                 "📧 Email non vérifié",
@@ -906,7 +1076,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Se connecter';
             return;
         }
-
+ 
         const etudiantStr = localStorage.getItem('esp_pay_user');
         if (etudiantStr) {
             const etudiant = JSON.parse(etudiantStr);
@@ -926,7 +1096,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             emailError.innerText = '❌ Aucun profil trouvé pour cet email. Veuillez vous inscrire.';
             await signOut(auth);
         }
-
+ 
     } catch (error) {
         console.error("❌ Erreur:", error);
         
@@ -947,7 +1117,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         } else {
             errorMessage = '❌ Une erreur est survenue. Veuillez réessayer.';
         }
-
+ 
         emailInput.classList.add('border-red-500', 'ring-red-500');
         emailInput.classList.remove('border-gray-300');
         emailError.classList.remove('hidden');
@@ -955,20 +1125,47 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         
         passwordInput.classList.add('border-red-500', 'ring-red-500');
         passwordInput.classList.remove('border-gray-300');
-
+ 
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Se connecter';
     }
 });
-
+ 
 // ============================================================
 // PAIEMENT (SIMULÉ)
 // ============================================================
+ 
+// Simulation de scan QR marchand (en attendant l'intégration réelle Wave/OM)
+const CODES_MARCHAND_DEMO = ["ESP-SCOLARITE-01", "ESP-DIRECTION-02"];
+ 
+function simulerScanQR() {
+    const champCode = document.getElementById('code-marchand');
+    if (!champCode) return;
+    const codeAleatoire = CODES_MARCHAND_DEMO[Math.floor(Math.random() * CODES_MARCHAND_DEMO.length)];
+    champCode.value = codeAleatoire;
+    showToast(`✅ QR scanné : code marchand "${codeAleatoire}" renseigné.`, "success");
+}
+ 
+const btnScanQr = document.getElementById('btn-scan-qr');
+const btnScanQrInline = document.getElementById('btn-scan-qr-inline');
+if (btnScanQr) btnScanQr.addEventListener('click', simulerScanQR);
+if (btnScanQrInline) btnScanQrInline.addEventListener('click', simulerScanQR);
+ 
+// Sélection visuelle des pastilles opérateur (Wave / Orange Money)
+document.querySelectorAll('input[name="operator"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+        document.querySelectorAll('.operator-pill').forEach(pill => pill.classList.remove('selected'));
+        if (radio.checked) radio.closest('.operator-pill').classList.add('selected');
+    });
+});
+ 
 document.getElementById('btn-payer').addEventListener('click', async () => {
     const montant = parseInt(document.getElementById('amount-input').value);
     const operator = document.querySelector('input[name="operator"]:checked');
-
+    const codeMarchandInput = document.getElementById('code-marchand');
+    const codeMarchand = codeMarchandInput && codeMarchandInput.value.trim() ? codeMarchandInput.value.trim() : "ESP-SCOLARITE-01";
+ 
     if (!montant || montant < 5000) {
         showToast("Le montant minimum est de 5 000 FCFA.", "error");
         return;
@@ -977,60 +1174,65 @@ document.getElementById('btn-payer').addEventListener('click', async () => {
         showToast("Sélectionnez un opérateur.", "error");
         return;
     }
-
+ 
     const btn = document.getElementById('btn-payer');
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Traitement...';
-
+ 
     try {
         const user = auth.currentUser;
         if (!user) {
             showToast("Veuillez vous reconnecter.", "error");
             return;
         }
-
+ 
         const etudiantStr = localStorage.getItem('esp_pay_user');
         if (!etudiantStr) {
             showToast("Profil introuvable.", "error");
             return;
         }
-
+ 
         const etudiant = JSON.parse(etudiantStr);
         const transaction = {
             montant: montant,
             operateur: operator.value,
+            code_marchand: codeMarchand,
             date: new Date().toLocaleString('fr-FR'),
+            timestamp: Date.now(),
             id_transaction: "TXN-" + Date.now().toString().slice(-6)
         };
-
+ 
         etudiant.montant_deja_paye = (etudiant.montant_deja_paye || 0) + montant;
         etudiant.transactions = etudiant.transactions || [];
         etudiant.transactions.push(transaction);
-
+ 
         localStorage.setItem('esp_pay_user', JSON.stringify(etudiant));
-
+ 
         montantReelGlobal = etudiant.montant_deja_paye;
         if (!soldeMasque) {
             document.getElementById('solde-affiche').innerHTML = `${montantReelGlobal.toLocaleString()} <span class="text-sm font-bold">FCFA</span>`;
         }
+        mettreAJourHoraireSolde();
         genererHistorique(etudiant.transactions);
-
+ 
         showModal(
             "✅ Paiement Réussi",
             `Votre versement de ${montant.toLocaleString()} FCFA via ${operator.value} a été enregistré.`,
             "success"
         );
         document.getElementById('amount-input').value = "";
-
+        if (codeMarchandInput) codeMarchandInput.value = "";
+        document.querySelectorAll('.operator-pill').forEach(pill => pill.classList.remove('selected'));
+ 
     } catch (error) {
         console.error("❌ Erreur:", error);
         showToast("Erreur lors du paiement.", "error");
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-credit-card"></i> Procéder au paiement';
+        btn.innerHTML = '<i class="fa-solid fa-credit-card"></i> Valider';
     }
 });
-
+ 
 // ============================================================
 // MODIFICATION DU MOT DE PASSE (2 ÉTAPES)
 // ============================================================
@@ -1041,44 +1243,44 @@ const newPasswordInput = document.getElementById('settings-new-password');
 const confirmPasswordInput = document.getElementById('settings-confirm-password');
 const btnVerify = document.getElementById('btn-verify-password');
 const btnUpdate = document.getElementById('btn-update-pwd');
-
+ 
 btnVerify.addEventListener('click', async () => {
     const currentPwd = currentPasswordInput.value;
-
+ 
     if (!currentPwd) {
         currentPasswordInput.classList.add('border-red-500', 'ring-red-500');
         currentPasswordInput.classList.remove('border-gray-300');
         showToast("Veuillez saisir votre mot de passe actuel.", "error");
         return;
     }
-
+ 
     if (currentPwd.length < 6) {
         currentPasswordInput.classList.add('border-red-500', 'ring-red-500');
         currentPasswordInput.classList.remove('border-gray-300');
         showToast("Le mot de passe doit contenir au moins 6 caractères.", "error");
         return;
     }
-
+ 
     btnVerify.disabled = true;
     btnVerify.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Vérification...';
-
+ 
     try {
         const user = auth.currentUser;
         if (!user) {
             showToast("Veuillez vous reconnecter.", "error");
             return;
         }
-
+ 
         const credential = EmailAuthProvider.credential(user.email, currentPwd);
         await reauthenticateWithCredential(user, credential);
-
+ 
         stepCurrentPassword.classList.add('hidden');
         stepNewPassword.classList.remove('hidden');
         currentPasswordInput.value = "";
         currentPasswordInput.classList.remove('border-red-500', 'ring-red-500');
         currentPasswordInput.classList.add('border-gray-300');
         showToast("✅ Mot de passe vérifié, vous pouvez maintenant le modifier.", "success");
-
+ 
     } catch (error) {
         console.error("❌ Erreur:", error);
         if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
@@ -1093,11 +1295,11 @@ btnVerify.addEventListener('click', async () => {
         btnVerify.innerHTML = '<i class="fa-solid fa-check mr-2"></i>Vérifier';
     }
 });
-
+ 
 btnUpdate.addEventListener('click', async () => {
     const newPwd = newPasswordInput.value;
     const confirmPwd = confirmPasswordInput.value;
-
+ 
     if (!newPwd || !confirmPwd) {
         if (!newPwd) {
             newPasswordInput.classList.add('border-red-500', 'ring-red-500');
@@ -1110,14 +1312,14 @@ btnUpdate.addEventListener('click', async () => {
         showToast("Veuillez remplir tous les champs.", "error");
         return;
     }
-
+ 
     if (newPwd.length < 6) {
         newPasswordInput.classList.add('border-red-500', 'ring-red-500');
         newPasswordInput.classList.remove('border-gray-300');
         showToast("Le mot de passe doit contenir au moins 6 caractères.", "error");
         return;
     }
-
+ 
     if (newPwd !== confirmPwd) {
         confirmPasswordInput.classList.add('border-red-500', 'ring-red-500');
         confirmPasswordInput.classList.remove('border-gray-300');
@@ -1127,21 +1329,21 @@ btnUpdate.addEventListener('click', async () => {
         newPasswordInput.focus();
         return;
     }
-
+ 
     btnUpdate.disabled = true;
     btnUpdate.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Mise à jour...';
-
+ 
     try {
         const user = auth.currentUser;
         if (!user) {
             showToast("Veuillez vous reconnecter.", "error");
             return;
         }
-
+ 
         await updatePassword(user, newPwd);
-
+ 
         showModal("✅ Succès", "Votre mot de passe a bien été mis à jour.", "success");
-
+ 
         newPasswordInput.value = "";
         confirmPasswordInput.value = "";
         newPasswordInput.classList.remove('border-red-500', 'ring-red-500');
@@ -1150,7 +1352,7 @@ btnUpdate.addEventListener('click', async () => {
         confirmPasswordInput.classList.add('border-gray-300');
         stepNewPassword.classList.add('hidden');
         stepCurrentPassword.classList.remove('hidden');
-
+ 
     } catch (error) {
         console.error("❌ Erreur:", error);
         if (error.code === 'auth/requires-recent-login') {
@@ -1167,7 +1369,7 @@ btnUpdate.addEventListener('click', async () => {
         btnUpdate.innerHTML = '<i class="fa-solid fa-rotate mr-2"></i>Mettre à jour';
     }
 });
-
+ 
 // ============================================================
 // FEEDBACK (stockage local)
 // ============================================================
@@ -1196,7 +1398,7 @@ document.getElementById('feedback-form').addEventListener('submit', (e) => {
     document.getElementById('feedback-email').value = "";
     document.getElementById('feedback-message').value = "";
 });
-
+ 
 // ============================================================
 // AFFICHAGE / MASQUAGE DU SOLDE
 // ============================================================
@@ -1212,14 +1414,14 @@ document.getElementById('btn-toggle-eye').addEventListener('click', () => {
         icon.className = "fa-solid fa-eye";
     }
 });
-
+ 
 // ============================================================
 // DÉCONNEXION (avec confirmation)
 // ============================================================
 const logoutModal = document.getElementById('logout-modal');
 const logoutConfirm = document.getElementById('logout-confirm');
 const logoutCancel = document.getElementById('logout-cancel');
-
+ 
 document.getElementById('btn-logout').addEventListener('click', (e) => {
     e.preventDefault();
     logoutModal.classList.remove('hidden');
@@ -1229,7 +1431,7 @@ document.getElementById('btn-logout').addEventListener('click', (e) => {
         logoutModal.querySelector('div').classList.remove('scale-95');
     }, 10);
 });
-
+ 
 logoutCancel.addEventListener('click', () => {
     logoutModal.classList.add('opacity-0');
     logoutModal.querySelector('div').classList.add('scale-95');
@@ -1238,7 +1440,7 @@ logoutCancel.addEventListener('click', () => {
         logoutModal.classList.add('hidden');
     }, 300);
 });
-
+ 
 logoutConfirm.addEventListener('click', async () => {
     try {
         logoutModal.classList.add('opacity-0');
@@ -1257,13 +1459,116 @@ logoutConfirm.addEventListener('click', async () => {
         showToast("❌ Erreur lors de la déconnexion.", "error");
     }
 });
-
+ 
 logoutModal.addEventListener('click', (e) => {
     if (e.target === logoutModal) {
         logoutCancel.click();
     }
 });
-
+ 
+// ============================================================
+// AFFICHAGE / MASQUAGE DU CODE SECRET (Connexion)
+// ============================================================
+const loginPasswordInput = document.getElementById('login-password');
+const loginPasswordEye = document.getElementById('login-password-eye');
+if (loginPasswordInput && loginPasswordEye) {
+    loginPasswordEye.addEventListener('click', () => {
+        const isPassword = loginPasswordInput.type === 'password';
+        loginPasswordInput.type = isPassword ? 'text' : 'password';
+        loginPasswordEye.innerHTML = isPassword
+            ? '<i class="fa-solid fa-eye-slash"></i>'
+            : '<i class="fa-solid fa-eye"></i>';
+    });
+}
+ 
+// ============================================================
+// FERMETURE DE COMPTE (suppression définitive)
+// ============================================================
+const deleteAccountModal = document.getElementById('delete-account-modal');
+const deleteAccountPasswordInput = document.getElementById('delete-account-password');
+const btnDeleteAccount = document.getElementById('btn-delete-account');
+const deleteAccountConfirm = document.getElementById('delete-account-confirm');
+const deleteAccountCancel = document.getElementById('delete-account-cancel');
+ 
+function ouvrirModalFermetureCompte() {
+    deleteAccountPasswordInput.value = "";
+    deleteAccountModal.classList.remove('hidden');
+    deleteAccountModal.classList.add('flex');
+    setTimeout(() => {
+        deleteAccountModal.classList.remove('opacity-0');
+        deleteAccountModal.querySelector('div').classList.remove('scale-95');
+    }, 10);
+}
+ 
+function fermerModalFermetureCompte() {
+    deleteAccountModal.classList.add('opacity-0');
+    deleteAccountModal.querySelector('div').classList.add('scale-95');
+    setTimeout(() => {
+        deleteAccountModal.classList.remove('flex');
+        deleteAccountModal.classList.add('hidden');
+    }, 300);
+}
+ 
+if (btnDeleteAccount) {
+    btnDeleteAccount.addEventListener('click', ouvrirModalFermetureCompte);
+}
+ 
+if (deleteAccountCancel) {
+    deleteAccountCancel.addEventListener('click', fermerModalFermetureCompte);
+}
+ 
+if (deleteAccountModal) {
+    deleteAccountModal.addEventListener('click', (e) => {
+        if (e.target === deleteAccountModal) fermerModalFermetureCompte();
+    });
+}
+ 
+if (deleteAccountConfirm) {
+    deleteAccountConfirm.addEventListener('click', async () => {
+        const motDePasse = deleteAccountPasswordInput.value;
+ 
+        if (!motDePasse) {
+            showToast("Veuillez saisir votre code secret pour confirmer.", "error");
+            return;
+        }
+ 
+        deleteAccountConfirm.disabled = true;
+        deleteAccountConfirm.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+ 
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                showToast("Veuillez vous reconnecter.", "error");
+                return;
+            }
+ 
+            const credential = EmailAuthProvider.credential(user.email, motDePasse);
+            await reauthenticateWithCredential(user, credential);
+            await deleteUser(user);
+ 
+            localStorage.removeItem('esp_pay_user');
+            localStorage.removeItem('esp_pay_last_login');
+            localStorage.removeItem('esp_pay_theme');
+ 
+            fermerModalFermetureCompte();
+            dashboardCharge = false;
+            showLogin();
+            showToast("✅ Votre compte a bien été fermé.", "success");
+ 
+        } catch (error) {
+            console.error("❌ Erreur fermeture de compte:", error);
+            if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                showToast("❌ Code secret incorrect.", "error");
+            } else {
+                showToast("❌ Erreur : " + error.message, "error");
+            }
+        } finally {
+            deleteAccountConfirm.disabled = false;
+            deleteAccountConfirm.innerHTML = "Oui, fermer";
+        }
+    });
+}
+ 
 // ============================================================
 // SURVEILLANCE AUTH (PASSIVE)
 // ============================================================
@@ -1285,16 +1590,16 @@ onAuthStateChanged(auth, (user) => {
         showLogin();
     }
 });
-
+ 
 // ============================================================
 // TOGGLES DES SECTIONS PARAMÈTRES
 // ============================================================
-
+ 
 function toggleSection(toggleId, contentId, arrowId) {
     const toggle = document.getElementById(toggleId);
     const content = document.getElementById(contentId);
     const arrow = document.getElementById(arrowId);
-
+ 
     if (toggle && content && arrow) {
         toggle.addEventListener('click', () => {
             content.classList.toggle('hidden');
@@ -1303,11 +1608,11 @@ function toggleSection(toggleId, contentId, arrowId) {
         });
     }
 }
-
+ 
 toggleSection('theme-toggle', 'theme-content', 'theme-arrow');
 toggleSection('password-toggle', 'password-content', 'password-arrow');
 toggleSection('contact-toggle', 'contact-content', 'contact-arrow');
 toggleSection('feedback-toggle', 'feedback-content', 'feedback-arrow');
 toggleSection('help-toggle', 'help-content', 'help-arrow');
-
+ 
 console.log("🚀 ESP Pay - Version complète");
