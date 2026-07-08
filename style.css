@@ -616,3 +616,11 @@
 .dark-mode .toast-warning .toast-message {
     color: #fbbf24;
 }
+/* Cacher l'œil du navigateur sur les champs mot de passe */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-webkit-clear-button,
+input[type="password"]::-webkit-inner-spin-button,
+input[type="password"]::-webkit-search-cancel-button {
+    display: none !important;
+    appearance: none !important;
+}
